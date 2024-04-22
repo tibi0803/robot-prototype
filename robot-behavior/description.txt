@@ -1,0 +1,42 @@
+"flowchart"
+
+follow the line
+keep track of the location (odometry based combined with counting the corners?)
+find the boxes(1 at a time)
+identify box color
+pick up the box
+follow the line and keep track of location 
+identify destination
+leave box
+
+repeat
+
+
+-----------
+
+'follow the line'
+
+IF left and right sensors low(/high, depends on the definition)-> go straight
+
+IF left sensor activated -> turn left untill the sensor deactivates
+IF two left sensors activated -> turn left sharper untill the sensor deactivates
+
+IF right sensor activated -> turn right untill the sensor deactivates
+IF two right sensors activated -> turn right sharper untill sensor deactivates
+
+IF all sensors get deactivated turn in big circles to find the line 
+
+IF perpendicular to the line (all sensors deactivated) depending on the desired 
+direction (mapping turn left/right)
+
+IF object detected -> turn around and find another path (detour)
+
+States: forward, turn_left, turn_left_sharp, turn_right, turn_right_sharp, rotate_left,
+rotate_right, find line, detour
+
+-----------
+
+IF the boxes are found - pick the box up 
+IF destination is reached - leave the box
+
+States: take_the_box, leave_the_box
