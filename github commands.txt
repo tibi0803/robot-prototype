@@ -1,0 +1,36 @@
+Open Visual Studio Code (VSCode) and navigate to the Explorer view 
+(press Ctrl + Shift + E).
+Click on the "Clone Repository" button or use the shortcut Ctrl + Shift + O
+to open the "Clone" dialog.
+Enter the URL of the GitHub repository you want to clone and press "Enter".
+
+Select the local directory where you want to clone the repository.
+Once the repository is cloned, open the terminal in VSCode by clicking on 
+the "Terminal" menu and selecting "New Terminal" or by using the shortcut 
+`Ctrl + ``.
+In the terminal, navigate to the cloned repository using the cd command. 
+For example, if the repository is named "my-repo", you can navigate to it 
+using cd my-repo.
+
+To check the status of the repository, use the git status command.
+
+To stage changes, use the git add command followed by the file name or . 
+to stage all changes. For example, git add. stages all changes.
+
+To commit changes, use the git commit -m command followed by a commit 
+message. For example, git commit -m "Add new feature".
+
+To push changes to the remote repository, use the git push command. 
+For example, git push origin main.
+
+To pull changes from the remote repository, use the git pull command. 
+For example, git pull origin main.
+
+To switch branches, use the git checkout command followed by the 
+branch name. For example, git checkout my-branch.
+
+To create a new branch, use the git checkout -b command followed by 
+the new branch name. For example, git checkout -b my-new-branch.
+
+To merge changes from one branch to another, use the git merge command. 
+For example, git merge my-branch.
