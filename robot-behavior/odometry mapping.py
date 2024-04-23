@@ -19,8 +19,7 @@ theta = 0  # Initial orientation (in radians)
 prev_left_encoder = left_encoder_pin.value()
 prev_right_encoder = right_encoder_pin.value()
 
-# Main loop for odometry-based localization
-while True:
+def update_odometry():
     # Read current encoder values
     current_left_encoder = left_encoder_pin.value()
     current_right_encoder = right_encoder_pin.value()
@@ -48,6 +47,4 @@ while True:
     # Print current position and orientation
     print("Position: ({:.2f}, {:.2f}) cm".format(x, y))
     print("Orientation: {:.2f} radians".format(theta))
-    
-    # Add a delay to control the loop frequency
-    time.sleep(0.1)  # Adjust as needed
+
