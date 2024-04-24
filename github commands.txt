@@ -10,7 +10,7 @@ the "Terminal" menu and selecting "New Terminal" or by using the shortcut
 `Ctrl + ``.
 In the terminal, navigate to the cloned repository using the cd command. 
 For example, if the repository is named "my-repo", you can navigate to it 
-using cd my-repo.
+using cd my-repo..
 
 To check the status of the repository, use the git status command.
 
