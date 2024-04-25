@@ -72,7 +72,8 @@ while True:
     # Other state machine code here
     print('x value:', x, 'y value:', y, 'theta value', theta)
 
-
+    # Add a delay to control the loop frequency
+    time.sleep(10)  # Adjust as needed
 
 
 
