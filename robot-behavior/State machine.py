@@ -34,21 +34,21 @@ enable_motor2 = PWM(Pin(5), frequency)
 #                                                               distance sensor   
 sensor = HCSR04(trigger_pin=22, echo_pin=23, echo_timeout_us=10000)
 
-# counter: used to maintain an active state for a number of cycles
+#                                         counter: used to maintain an active state for a number of cycles
 counter = 0
 COUNTER_MAX = 5
 
-#define the variable for current state
+#define the variable for                                         current state
 current_state = 'forward'
 
-#                                                             encoders
+#                                                                  encoders
 # Define GPIO pins for wheel encoders
 left_encoder_pin = machine.Pin(12, machine.Pin.IN)
 right_encoder_pin = machine.Pin(13, machine.Pin.IN)
 
 # Define constants for wheel parameters
-R = 3.35  # Radius of the wheels (in cm)
-L = 20  # Distance between the wheels (in cm)
+WHEEL_RADIUS = 3.35  # Radius of the wheels in centimeters
+WHEEL_DISTANCE = 20  # Distance between the wheels in centimeters
 
 # Initialize variables for robot's position and orientation
 x = 0  # Initial x-coordinate (in cm)
@@ -191,3 +191,7 @@ while True:
 
     # increment counter
     counter += 1
+
+    #call the update odometry function inside each loop and create another odometry function that substracts from the distance, 
+    #then put that inside the loops where the robot turns a motor backwards
+    #it means that there should be another 2 functions, one where the left motor rotates backwards one for the other
