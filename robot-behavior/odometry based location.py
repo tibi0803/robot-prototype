@@ -26,19 +26,27 @@ theta = 0  # Initial orientation (in radians)
 
 
 def update_odometry():
-    global x, y, theta, prev_left_encoder_count, prev_right_encoder_count, left_encoder_count, right_encoder_count
+    global x, y, theta, prev_left_encoder_count, prev_right_encoder_count, left_encoder_count, right_encoder_count, prev_left_encoder_state, prev_right_encoder_state
 
     # Read current states of encoder pins
     left_state = left_encoder_pin.value()
     right_state = right_encoder_pin.value()
 
     # Check for rising edge (transition from LOW to HIGH) for the left wheel
-    if left_state == 1 and prev_left_encoder_count == 0:
+    if left_state == 1 and prev_left_encoder_state == 0:
         left_encoder_count += 1
 
+        print('x value:', x, 'y value:', y, 'theta value', theta)
+
     # Check for rising edge (transition from LOW to HIGH) for the right wheel
-    if right_state == 1 and prev_right_encoder_count == 0:
+    if right_state == 1 and prev_right_encoder_state == 0:
         right_encoder_count += 1
+
+        print('x value:', x, 'y value:', y, 'theta value', theta)
+
+    # Update previous encoder states
+    prev_left_encoder_state = left_state
+    prev_right_encoder_state = right_state
 
     # Calculate the change in encoder counts for each wheel
     delta_left_encoder = left_encoder_count - prev_left_encoder_count
@@ -49,8 +57,8 @@ def update_odometry():
     prev_right_encoder_count = right_encoder_count
 
     # Calculate linear and angular distances traveled by each wheel
-    left_distance = 2 * math.pi * WHEEL_RADIUS * delta_left_encoder
-    right_distance = 2 * math.pi * WHEEL_RADIUS * delta_right_encoder
+    left_distance = 2 * math.pi * WHEEL_RADIUS * left_encoder_count
+    right_distance = 2 * math.pi * WHEEL_RADIUS * right_encoder_count
 
     # Calculate linear and angular distances traveled by the robot
     linear_distance = (left_distance + right_distance) / 2
@@ -70,10 +78,10 @@ while True:
     # Update odometry
     update_odometry()
     # Other state machine code here
-    print('x value:', x, 'y value:', y, 'theta value', theta)
+    #print('x value:', x, 'y value:', y, 'theta value', theta)
 
     # Add a delay to control the loop frequency
-    time.sleep(10)  # Adjust as needed
+    time.sleep(0.1)  # Adjust as needed
 
 
 
