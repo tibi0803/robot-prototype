@@ -55,38 +55,61 @@ x = 0  # Initial x-coordinate (in cm)
 y = 0  # Initial y-coordinate (in cm)
 theta = 0  # Initial orientation (in radians)
 
-# Initialize variables for previous encoder values
-prev_left_encoder = left_encoder_pin.value()
-prev_right_encoder = right_encoder_pin.value()
+# Variables to count encoder steps for each wheel
+left_encoder_count = 0
+right_encoder_count = 0
+
+# Variables to store previous encoder counts
+prev_left_encoder_count = 0
+prev_right_encoder_count = 0
 
 def update_odometry():
-    # Read current encoder values
-    current_left_encoder = left_encoder_pin.value()
-    current_right_encoder = right_encoder_pin.value()
-    
-    # Calculate changes in encoder values
-    delta_left_encoder = current_left_encoder - prev_left_encoder
-    delta_right_encoder = current_right_encoder - prev_right_encoder
-    
-    # Calculate linear and angular displacements
-    delta_s = R / 2 * (delta_left_encoder + delta_right_encoder)
-    delta_theta = R / L * (delta_right_encoder - delta_left_encoder)
-    
-    # Update position and orientation
-    x += delta_s * math.cos(theta)
-    y += delta_s * math.sin(theta)
-    theta += delta_theta
-    
-    # Normalize orientation to be within the range [0, 2*pi)
+    global x, y, theta, prev_left_encoder_count, prev_right_encoder_count, left_encoder_count, right_encoder_count, prev_left_encoder_state, prev_right_encoder_state
+
+    # Read current states of encoder pins
+    left_state = left_encoder_pin.value()
+    right_state = right_encoder_pin.value()
+
+    # Check for rising edge (transition from LOW to HIGH) for the left wheel
+    if left_state == 1 and prev_left_encoder_state == 0:
+        left_encoder_count += 1
+
+        print('x value:', x, 'y value:', y, 'theta value', theta)
+
+    # Check for rising edge (transition from LOW to HIGH) for the right wheel
+    if right_state == 1 and prev_right_encoder_state == 0:
+        right_encoder_count += 1
+
+        print('x value:', x, 'y value:', y, 'theta value', theta)
+
+    # Update previous encoder states
+    prev_left_encoder_state = left_state
+    prev_right_encoder_state = right_state
+
+    # Calculate the change in encoder counts for each wheel
+    delta_left_encoder = left_encoder_count - prev_left_encoder_count
+    delta_right_encoder = right_encoder_count - prev_right_encoder_count
+
+    # Update previous encoder counts
+    prev_left_encoder_count = left_encoder_count
+    prev_right_encoder_count = right_encoder_count
+
+    # Calculate linear and angular distances traveled by each wheel
+    left_distance = 2 * math.pi * WHEEL_RADIUS * left_encoder_count
+    right_distance = 2 * math.pi * WHEEL_RADIUS * right_encoder_count
+
+    # Calculate linear and angular distances traveled by the robot
+    linear_distance = (left_distance + right_distance) / 2
+    angular_distance = (right_distance - left_distance) / WHEEL_DISTANCE
+
+    # Update robot pose using odometry equations
+    x += linear_distance * math.cos(theta + angular_distance / 2)
+    y += linear_distance * math.sin(theta + angular_distance / 2)
+    theta += angular_distance
+
+    # Normalize robot orientation to the range [-pi, pi]
     theta = theta % (2 * math.pi)
-    
-    # Update previous encoder values
-    prev_left_encoder = current_left_encoder
-    prev_right_encoder = current_right_encoder
-    
-    # Print current position and orientation
-    print("Position: ({:.2f}, {:.2f}) cm".format(x, y))
-    print("Orientation: {:.2f} radians".format(theta))
+
 
 #                                                                  MAIN LOOP
 
