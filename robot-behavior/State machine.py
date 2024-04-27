@@ -121,10 +121,8 @@ while True:
     s5value = sensor5.read()
     print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
 
-    distance = sensor.distance_cm() #for the distance sensor
-    
-    # Call the update_odometry function to update the current position and orientation
-    update_odometry()
+    distance = sensor.distance_cm() 
+    print(distance) #for the distance sensor
 
     if current_state == 'forward':
 
@@ -135,6 +133,9 @@ while True:
         pin1_motor2.value(1)
         pin2_motor2.value(0)
         # Code for moving forward
+
+        # Call the update_odometry function to update the current position and orientation
+        update_odometry()
 
         if s1value < 3500 or s2value < 1600:
             current_state = 'turn_left'
@@ -157,6 +158,9 @@ while True:
         pin2_motor2.value(1)
         # Code for turning right
 
+        # Call the update_odometry function to update the current position and orientation
+        update_odometry()
+
         # check if it is necessary to update current_state
         if counter == COUNTER_MAX:
             current_state = 'forward'
@@ -171,6 +175,9 @@ while True:
         pin2_motor2.value(0)
         # Code for turning left
 
+        # Call the update_odometry function to update the current position and orientation
+        update_odometry()
+
         # check if it is necessary to update current_state
         if counter == COUNTER_MAX:
             current_state = 'forward'        
@@ -184,6 +191,9 @@ while True:
         pin1_motor2.value(0)
         pin2_motor2.value(0)
         # Code for stopping
+
+        # Call the update_odometry function to update the current position and orientation
+        update_odometry()   
 
         # check if it is necessary to update current_state
         if counter == COUNTER_MAX:
