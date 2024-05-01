@@ -37,7 +37,7 @@ sensor = HCSR04(trigger_pin=22, echo_pin=23, echo_timeout_us=10000)
 #                                              pins for the states
 # Define the pin connected to the LED
 the_pin = Pin(27, Pin.OUT) #this is the pin constantly high
-forward_pin = Pin(26, Pin.OUT) #pin for forward state
+
 left_pin = Pin(25, Pin.OUT) #pin for turn left state
 right_pin = Pin(33, Pin.OUT) #pin for turn right state
 stop_pin = Pin(32, Pin.OUT) #pin for stop state
