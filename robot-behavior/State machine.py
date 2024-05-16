@@ -144,7 +144,8 @@ while True:
     print(distance) #for the distance sensor
 
     if current_state == 'forward':
-
+        print(forward)
+        
         enable_motor1.duty(1023)
         enable_motor2.duty(1023)
         pin1_motor1.value(1)
