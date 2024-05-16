@@ -47,17 +47,20 @@ left_encoder_pin = machine.Pin(12, machine.Pin.IN)
 right_encoder_pin = machine.Pin(13, machine.Pin.IN)
 
 # Define constants for wheel parameters
-WHEEL_RADIUS = 3.35  # Radius of the wheels in centimeters
-WHEEL_DISTANCE = 20  # Distance between the wheels in centimeters
+WHEEL_RADIUS = 33.5  # Radius of the wheels in mm
+WHEEL_DISTANCE = 200  # Distance between the wheels in mm
+
+#distance traveled by a wheel every encoder pulse
+dist = 5  #in mm
 
 # Initialize variables for robot's position and orientation
-x = 0  # Initial x-coordinate (in cm)
-y = 0  # Initial y-coordinate (in cm)
+x = 0  # Initial x-coordinate (in mm)
+y = 0  # Initial y-coordinate (in mm)
 theta = 0  # Initial orientation (in radians)
 
-# Variables to count encoder steps for each wheel
-left_encoder_count = 0
-right_encoder_count = 0
+# Variables to keep track in the change of movement of the wheels
+delta_left = 0
+delta_right = 0
 
 # Variables to store previous encoder counts
 prev_left_encoder_count = 0
@@ -69,7 +72,7 @@ prev_right_encoder_state = 0
 
 
 def update_odometry():
-    global x, y, theta, prev_left_encoder_count, prev_right_encoder_count, left_encoder_count, right_encoder_count, prev_left_encoder_state, prev_right_encoder_state
+    global x, y, theta, prev_left_encoder_count, prev_right_encoder_count, left_encoder_count, right_encoder_count, prev_left_encoder_state, prev_right_encoder_state, delta_right, delta_left, Rturn
 
     # Read current states of encoder pins
     left_state = left_encoder_pin.value()
@@ -79,37 +82,45 @@ def update_odometry():
     if left_state == 1 and prev_left_encoder_state == 0:
         left_encoder_count += 1
 
-        # Calculate the change in encoder counts for the left wheel
-        delta_left_encoder = left_encoder_count - prev_left_encoder_count
+        # Calculate the change in distance for a pulse for the left wheel
+        delta_left = (left_encoder_count - prev_left_encoder_count) * dist
+        
+        #update the orientation of the robot
+        theta += (delta_left - delta_right)/WHEEL_DISTANCE
 
-        # Update previous encoder count
-        prev_left_encoder_count = left_encoder_count
+        #radius of the turn   -  useful for other formulas
+        Rturn = (delta_left + delta_right)/2*theta
 
-        # Calculate linear and angular distances traveled by the left wheel
-        left_distance = 2 * math.pi * WHEEL_RADIUS * delta_left_encoder
+        if delta_left - delta_right >= 0:
+            #formulas highlited in blue in notes
+            x += Rturn*math.sin(theta)
+            y += Rturn*(1-math.cos(theta))
 
-        # Update robot pose using odometry equations
-        x += left_distance * math.cos(theta)
-        y += left_distance * math.sin(theta)
-        theta += delta_left_encoder / WHEEL_RADIUS
+        elif delta_left - delta_right < 0:
+            x += (delta_left - delta_right)/2
+            y += (delta_left**2 - delta_right**2)/4*WHEEL_DISTANCE
 
     # Check for rising edge (transition from LOW to HIGH) for the right wheel
     if right_state == 1 and prev_right_encoder_state == 0:
         right_encoder_count += 1
 
-        # Calculate the change in encoder counts for the right wheel
-        delta_right_encoder = right_encoder_count - prev_right_encoder_count
+        # Calculate the change in distance for a pulse for the left wheel
+        delta_left = (left_encoder_count - prev_left_encoder_count) * dist
+        
+        #update the orientation of the robot
+        theta += (delta_left - delta_right)/WHEEL_DISTANCE
 
-        # Update previous encoder count
-        prev_right_encoder_count = right_encoder_count
+        #radius of the turn   -  useful for other formulas
+        Rturn = (delta_left + delta_right)/2*theta
 
-        # Calculate linear and angular distances traveled by the right wheel
-        right_distance = 2 * math.pi * WHEEL_RADIUS * delta_right_encoder
+        if delta_left - delta_right >= 0:
+            #formulas highlited in blue in notes
+            x += Rturn*math.sin(theta)
+            y += Rturn*(1-math.cos(theta))
 
-        # Update robot pose using odometry equations
-        x += right_distance * math.cos(theta)
-        y += right_distance * math.sin(theta)
-        theta -= delta_right_encoder / WHEEL_RADIUS
+        elif delta_left - delta_right < 0:
+            x += (delta_left - delta_right)/2
+            y += (delta_left**2 - delta_right**2)/4*WHEEL_DISTANCE
 
     # Update previous encoder states 
     if right_state == 0:
