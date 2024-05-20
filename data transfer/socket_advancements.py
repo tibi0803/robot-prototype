@@ -11,17 +11,6 @@ s.bind(('192.168.1.52', 12345))
 s.listen(5)
 print('Waiting for connection...')
 
-while True:
-    # Accept an incoming connection
-    c, addr = s.accept()
-    print('Got connection from', addr)
-
-    # Create a new thread to handle the connection
-    t = threading.Thread(target=handle_connection, args=(c, addr))
-    t.start()
-
-# Close the socket
-s.close()
 
 def handle_connection(c, addr):
     while True:
@@ -41,3 +30,17 @@ def handle_connection(c, addr):
 
     # Close the connection
     c.close()
+
+    
+while True:
+    # Accept an incoming connection
+    c, addr = s.accept()
+    print('Got connection from', addr)
+
+    # Create a new thread to handle the connection
+    t = threading.Thread(target=handle_connection, args=(c, addr))
+    t.start()
+
+# Close the socket
+s.close()
+

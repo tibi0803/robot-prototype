@@ -5,6 +5,16 @@ from time import sleep #   |^
 import math   #encoders
 import time
 import machine #|^
+import socket   #communication w the laptop
+import network  #|^
+
+#                                                              network connection
+
+#establish a Wi-Fi connection using the network
+wlan = network.WLAN(network.STA_IF)
+wlan.active(True)
+wlan.connect('TELE2-EF3615_2.4G', '477463EFE7CA')
+
 #                                                                  line sensor 
 
 sensor1 = ADC(Pin(27))
@@ -150,6 +160,16 @@ while True:
     s4value = sensor4.read()
     s5value = sensor5.read()
     print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    #connect to the laptop using the socket object
+    s.connect(('192.168.1.52', 12345)) #replace the values
+
+    #you can send data to the laptop using the send() method
+    s.send('Hello, laptop!')
+
+    #   ^ part for connecting to the laptop
 
     distance = sensor.distance_cm() 
     print(distance) #for the distance sensor
