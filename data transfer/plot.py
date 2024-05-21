@@ -21,4 +21,4 @@ while True:
         print('Received:', data)
         data_list = data.decode('utf-8').split(',')
         plot_data(data_list)
-    c.close() /
+    c.close() 
