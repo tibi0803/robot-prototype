@@ -5,14 +5,14 @@ import threading
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Bind the socket to a specific IP address and port number
-s.bind(('192.168.1.52', 12345))
+s.bind(('192.168.0.100', 12345))
 
 # Listen for incoming connections
 s.listen(5)
 print('Waiting for connection...')
 
-
 def handle_connection(c, addr):
+    buffer = ""
     while True:
         # Receive data from the ESP32 board
         data = c.recv(1024)
@@ -20,18 +20,34 @@ def handle_connection(c, addr):
             break
 
         # Decode the received data from bytes to string
-        data_str = data.decode('utf-8')
+        buffer += data.decode('utf-8')
 
-        # Split the data into a list
-        data_list = data_str.split(',')
+        # Process complete pairs of x, y values
+        while ',' in buffer:
+            x_index = buffer.find(',')
+            if x_index == -1:
+                break
 
-        # Print the received data
-        print('Received:', data_list)
+            # Split the data up to the first comma
+            x_value = buffer[:x_index]
+            buffer = buffer[x_index + 1:]
+
+            # Find the next comma for the y value
+            y_index = buffer.find(',')
+            if y_index == -1:
+                # If there is no comma, wait for more data
+                break
+
+            # Get the y value
+            y_value = buffer[:y_index]
+            buffer = buffer[y_index + 1:]
+
+            # Print the received data pair
+            print('Received:', (x_value, y_value))
 
     # Close the connection
     c.close()
 
-    
 while True:
     # Accept an incoming connection
     c, addr = s.accept()
@@ -43,4 +59,3 @@ while True:
 
 # Close the socket
 s.close()
-
