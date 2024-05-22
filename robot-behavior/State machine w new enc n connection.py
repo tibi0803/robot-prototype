@@ -17,16 +17,19 @@ wlan.connect('TELE2-EF3615_2.4G', '477463EFE7CA')
 
 #                                                                  line sensor 
 
-sensor1 = ADC(Pin(27))
+sensor1 = ADC(Pin(32))  # Valid ADC1 pin
+sensor2 = ADC(Pin(33))  # Valid ADC1 pin
+sensor3 = ADC(Pin(34))  # Valid ADC1 pin, input-only
+sensor4 = ADC(Pin(35))  # Valid ADC1 pin, input-only
+sensor5 = ADC(Pin(36))  # Valid ADC1 pin, input-only
+
+# Set the attenuation level (ESP32 ADC valid attenuation levels: 0dB, 2.5dB, 6dB, 11dB)
 sensor1.atten(ADC.ATTN_11DB)
-sensor2 = ADC(Pin(26))
 sensor2.atten(ADC.ATTN_11DB)
-sensor3 = ADC(Pin(25))
 sensor3.atten(ADC.ATTN_11DB)
-sensor4 = ADC(Pin(33))
 sensor4.atten(ADC.ATTN_11DB)
-sensor5 = ADC(Pin(32))
 sensor5.atten(ADC.ATTN_11DB)
+
 
 #                                                               motor controller
 frequency = 15000
@@ -67,6 +70,10 @@ dist = 5  #in mm
 x = 0  # Initial x-coordinate (in mm)
 y = 0  # Initial y-coordinate (in mm)
 theta = 0  # Initial orientation (in radians)
+
+#encoder counts
+left_encoder_count = 0
+right_encoder_count = 0
 
 # Variables to keep track in the change of movement of the wheels
 delta_left = 0
@@ -144,6 +151,10 @@ def update_odometry():
     # Normalize robot orientation to the range [-pi, pi]
     theta = theta % (2 * math.pi)
 
+    s.send(str(x) + ',' + str(y))
+    #send info to the laptop for the plot
+    
+
 
 
 
@@ -152,8 +163,24 @@ def update_odometry():
 
 
 #                                                                  MAIN LOOP
+while not wlan.isconnected():
+    pass
+print('Connected to Wi-Fi')
 
-while True:
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+#connect to the laptop using the socket object
+s.connect(('192.168.1.52', 12345)) #replace the values
+
+#you can send data to the laptop using the send() method
+s.send('Hello, laptop!')
+
+#   ^ part for connecting to the laptop
+
+
+while wlan.isconnected():
+
     s1value = sensor1.read()
     s2value = sensor2.read()
     s3value = sensor3.read()
@@ -161,22 +188,13 @@ while True:
     s5value = sensor5.read()
     print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
 
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    #connect to the laptop using the socket object
-    s.connect(('192.168.1.52', 12345)) #replace the values
-
-    #you can send data to the laptop using the send() method
-    s.send('Hello, laptop!')
-
-    #   ^ part for connecting to the laptop
+    
 
     distance = sensor.distance_cm() 
     print(distance) #for the distance sensor
 
     if current_state == 'forward':
-        print(forward)
-        
+
         enable_motor1.duty(1023)
         enable_motor2.duty(1023)
         pin1_motor1.value(1)
@@ -255,4 +273,4 @@ while True:
 
     #call the update odometry function inside each loop and create another odometry function that substracts from the distance, 
     #then put that inside the loops where the robot turns a motor backwards
-    #it means that there should be another 2 functions, one where the left motor rotates backwards one for the other
+    #it means that there should be another 2 functions, one where the left motor rotates backwards one for the other 
