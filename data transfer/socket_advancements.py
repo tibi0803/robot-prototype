@@ -1,61 +1,67 @@
 import socket
 import threading
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
 # Create a socket object
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Bind the socket to a specific IP address and port number
 s.bind(('192.168.0.100', 12345))
-
-# Listen for incoming connections
 s.listen(5)
 print('Waiting for connection...')
 
+# Data storage for plotting
+x_data = []
+y_data = []
+buffer = ""
+
+# Lock for thread-safe data access
+data_lock = threading.Lock()
+
 def handle_connection(c, addr):
-    buffer = ""
+    global buffer
     while True:
-        # Receive data from the ESP32 board
         data = c.recv(1024)
         if not data:
             break
 
-        # Decode the received data from bytes to string
         buffer += data.decode('utf-8')
 
-        # Process complete pairs of x, y values
-        while ',' in buffer:
-            x_index = buffer.find(',')
-            if x_index == -1:
-                break
+        while '\n' in buffer:
+            line, buffer = buffer.split('\n', 1)
+            if ',' in line:
+                x_value, y_value = line.split(',')
+                try:
+                    x = float(x_value)
+                    y = float(y_value)
+                    with data_lock:
+                        x_data.append(x)
+                        y_data.append(y)
+                except ValueError:
+                    pass
 
-            # Split the data up to the first comma
-            x_value = buffer[:x_index]
-            buffer = buffer[x_index + 1:]
-
-            # Find the next comma for the y value
-            y_index = buffer.find(',')
-            if y_index == -1:
-                # If there is no comma, wait for more data
-                break
-
-            # Get the y value
-            y_value = buffer[:y_index]
-            buffer = buffer[y_index + 1:]
-
-            # Print the received data pair
-            print('Received:', (x_value, y_value))
-
-    # Close the connection
     c.close()
 
-while True:
-    # Accept an incoming connection
-    c, addr = s.accept()
-    print('Got connection from', addr)
+def start_server():
+    while True:
+        c, addr = s.accept()
+        print('Got connection from', addr)
+        t = threading.Thread(target=handle_connection, args=(c, addr))
+        t.start()
 
-    # Create a new thread to handle the connection
-    t = threading.Thread(target=handle_connection, args=(c, addr))
-    t.start()
+def update_plot(frame):
+    with data_lock:
+        plt.cla()
+        plt.plot(x_data, y_data, marker='o')
+        plt.xlabel('X-coordinate')
+        plt.ylabel('Y-coordinate')
+        plt.title('Real-time Object Tracking')
 
-# Close the socket
+fig, ax = plt.subplots()
+ani = FuncAnimation(fig, update_plot, interval=100, cache_frame_data=False)
+
+server_thread = threading.Thread(target=start_server)
+server_thread.start()
+
+plt.show()
+
 s.close()
