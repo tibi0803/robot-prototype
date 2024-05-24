@@ -1,0 +1,21 @@
+graph = {
+    'A': {'B': 'left', 'S':'above'},
+    'B': {'A': 'right', 'C': 'left' },
+    'C': {'B': 'right', 'D': 'left' },
+    'D': {'C': 'right', 'E': 'left' },
+    'E': {'F': 'left', 'H': 'above', 'D': 'right'},
+    'F': {'G': 'above', 'E': 'right'},
+    'G': {'J': 'above', 'F': 'below', 'H': 'right'},
+    'H': {'G': 'left', 'I': 'above', 'E': 'below'},
+    'I': {'J': 'left', 'H': 'below', 'Q': 'above', 'S': 'right'},
+    'J': {'I': 'right', 'G': 'below', 'K': 'above'},
+    'K': {'J': 'below', 'L': 'right'},
+    'L': {'K': 'left', 'M': 'right'},
+    'M': {'L': 'left', 'N': 'right'},
+    'N': {'M': 'left', 'O': 'right'},
+    'O': {'N': 'left', 'Q': 'below', 'P': 'right'},
+    'P': {'O': 'left', 'R': 'below'},
+    'Q': {'I': 'below', 'O': 'above', 'R': 'right'},
+    'R': {'Q': 'left', 'P': 'above', 'S': 'below'},
+    'S': {'R': 'right', 'I': 'below', 'A': 'below'}
+}

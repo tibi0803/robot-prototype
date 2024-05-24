@@ -289,7 +289,4 @@ while wlan.isconnected():
     # increment counter
     counter += 1
 
-    #call the update odometry function inside each loop and create another odometry function that substracts from the distance, 
-    #then put that inside the loops where the robot turns a motor backwards
-    #it means that there should be another 2 functions, one where the left motor rotates backwards one for the other 
-
+    
