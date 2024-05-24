@@ -13,7 +13,8 @@ import network  #|^
 #establish a Wi-Fi connection using the network
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
-wlan.connect('TELE2-EF3615_2.4G', '477463EFE7CA')
+wlan.connect('House of Mici', '76542527')
+
 
 #                                                                  line sensor 
 
@@ -116,6 +117,12 @@ def update_odometry():
         elif delta_left - delta_right < 0:
             x += (delta_left - delta_right)/2
             y += (delta_left**2 - delta_right**2)/4*WHEEL_DISTANCE
+        
+        prev_left_encoder_state = 1
+        
+        # Send x and y coordinates as a comma-separated string
+        data = f"{x},{y}\n"
+        s.send(data.encode())
 
     # Check for rising edge (transition from LOW to HIGH) for the right wheel
     if right_state == 1 and prev_right_encoder_state == 0:
@@ -138,6 +145,13 @@ def update_odometry():
         elif delta_left - delta_right < 0:
             x += (delta_left - delta_right)/2
             y += (delta_left**2 - delta_right**2)/4*WHEEL_DISTANCE
+        
+        prev_right_encoder_state = 1
+        
+        # Send x and y coordinates as a comma-separated string
+        data = f"{x},{y}\n"
+        s.send(data.encode())
+
 
     # Update previous encoder states 
     if right_state == 0:
@@ -151,8 +165,12 @@ def update_odometry():
     # Normalize robot orientation to the range [-pi, pi]
     theta = theta % (2 * math.pi)
 
-    s.send(str(x) + ',' + str(y))
+    #s.send(str(x) + str(y))
     #send info to the laptop for the plot
+
+    # Send x and y coordinates as a comma-separated string
+    #data = f"{x},{y}\n"
+    #s.send(data.encode())
     
 
 
@@ -171,10 +189,10 @@ print('Connected to Wi-Fi')
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 #connect to the laptop using the socket object
-s.connect(('192.168.1.52', 12345)) #replace the values
+s.connect(('192.168.0.100', 12345)) #replace the values
 
 #you can send data to the laptop using the send() method
-s.send('Hello, laptop!')
+#s.send('Hello, laptop!')
 
 #   ^ part for connecting to the laptop
 
@@ -194,7 +212,7 @@ while wlan.isconnected():
     print(distance) #for the distance sensor
 
     if current_state == 'forward':
-
+        print("sforward")
         enable_motor1.duty(1023)
         enable_motor2.duty(1023)
         pin1_motor1.value(1)

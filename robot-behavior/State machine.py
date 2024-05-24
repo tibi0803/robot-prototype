@@ -58,7 +58,7 @@ current_state = 'forward'
 #                                                                  encoders
 # Define GPIO pins for wheel encoders
 left_encoder_pin = machine.Pin(12, machine.Pin.IN)
-right_encoder_pin = machine.Pin(13, machine.Pin.IN)
+right_encoder_pin = machine.Pin(14, machine.Pin.IN)
 
 # Define constants for wheel parameters
 WHEEL_RADIUS = 33.5  # Radius of the wheels in mm
