@@ -172,9 +172,43 @@ def update_odometry():
     #data = f"{x},{y}\n"
     #s.send(data.encode())
     
+def forward():
+    enable_motor1.duty(1023)
+    enable_motor2.duty(1023)
+    pin1_motor1.value(1)
+    pin2_motor1.value(0)
+    pin1_motor2.value(1)
+    pin2_motor2.value(0)
+    # Code for moving forward
 
+def turnleft():
+    enable_motor1.duty(1023)
+    enable_motor2.duty(1023)
+    pin1_motor1.value(0)
+    pin2_motor1.value(1)
+    pin1_motor2.value(1)
+    pin2_motor2.value(0)
+    # Code for turning left
 
+def turnright():
+    enable_motor1.duty(1023)
+    enable_motor2.duty(1023)
+    pin1_motor1.value(1)
+    pin2_motor1.value(0)
+    pin1_motor2.value(0)
+    pin2_motor2.value(1)
+    # Code for turning right
 
+def stop(): # make the robot stop
+    enable_motor1.duty(1023)
+    enable_motor2.duty(1023)
+    pin1_motor1.value(0)
+    pin2_motor1.value(0)
+    pin1_motor2.value(0)
+    pin2_motor2.value(0)
+    # Code for stopping
+
+ 
 
 #rs and ls stand for left substract and right substract for states where either the left wheel or the right wheel are turning backwards
 #more functions can be added, depending on how the wheels turn, maybe both backwards
@@ -211,15 +245,9 @@ while wlan.isconnected():
     distance = sensor.distance_cm() 
     print(distance) #for the distance sensor
 
-    if current_state == 'forward':
-        print("sforward")
-        enable_motor1.duty(1023)
-        enable_motor2.duty(1023)
-        pin1_motor1.value(1)
-        pin2_motor1.value(0)
-        pin1_motor2.value(1)
-        pin2_motor2.value(0)
-        # Code for moving forward
+    if current_state == 'forward': #state in which there is FOLLOW THE LINE
+        print("forward")
+        def forward() #robot moves forward
 
         # Call the update_odometry function to update the current position and orientation
         update_odometry()
@@ -237,52 +265,34 @@ while wlan.isconnected():
     
     if current_state == 'turn_right':
         print("turn_right")
-        enable_motor1.duty(1023)
-        enable_motor2.duty(1023)
-        pin1_motor1.value(1)
-        pin2_motor1.value(0)
-        pin1_motor2.value(0)
-        pin2_motor2.value(1)
-        # Code for turning right
-
+        def turn_right() #robot turns right
         # Call the update_odometry function to update the current position and orientation
         update_odometry()
 
-        # check if it is necessary to update current_state
+        # return to going forward
         if counter == COUNTER_MAX:
             current_state = 'forward'
     
     if current_state == 'turn_left':
         print("turn_left")
-        enable_motor1.duty(1023)
-        enable_motor2.duty(1023)
-        pin1_motor1.value(0)
-        pin2_motor1.value(1)
-        pin1_motor2.value(1)
-        pin2_motor2.value(0)
-        # Code for turning left
+        def turnleft()
 
         # Call the update_odometry function to update the current position and orientation
         update_odometry()
 
-        # check if it is necessary to update current_state
+        # return to going forward
         if counter == COUNTER_MAX:
             current_state = 'forward'        
 
     if current_state == "stop": # this has to become turn around and find path
         print("stop")
-        enable_motor1.duty(1023)
-        enable_motor2.duty(1023)
-        pin1_motor1.value(0)
-        pin2_motor1.value(0)
-        pin1_motor2.value(0)
-        pin2_motor2.value(0)
+        def stop()
         # Code for stopping
 
         # Call the update_odometry function to update the current position and orientation
         update_odometry()   
 
-        # check if it is necessary to update current_state
+        # return to going forward
         if counter == COUNTER_MAX:
             current_state = 'forward'
 

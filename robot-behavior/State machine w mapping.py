@@ -7,6 +7,8 @@ import time
 import machine #|^
 import socket   #communication w the laptop
 import network  #|^
+from collections import deque #mapping
+import utime # |^
 
 #                                                              network connection
 
@@ -32,6 +34,89 @@ sensor4.atten(ADC.ATTN_11DB)
 sensor5.atten(ADC.ATTN_11DB)
 
 
+#                                                        graph that represents the map
+
+graph = {
+    'A': {'B': 'left', 'S':'above'},
+    'B': {'A': 'right', 'C': 'left' },
+    'C': {'B': 'right', 'D': 'left' },
+    'D': {'C': 'right', 'E': 'left' },
+    'E': {'F': 'left', 'H': 'above', 'D': 'right'},
+    'F': {'G': 'above', 'E': 'right'},
+    'G': {'J': 'above', 'F': 'below', 'H': 'right'},
+    'H': {'G': 'left', 'I': 'above', 'E': 'below'},
+    'I': {'J': 'left', 'H': 'below', 'Q': 'above', 'S': 'right'},
+    'J': {'I': 'right', 'G': 'below', 'K': 'above'},
+    'K': {'J': 'below', 'L': 'right'},
+    'L': {'K': 'left', 'M': 'right'},
+    'M': {'L': 'left', 'N': 'right'},
+    'N': {'M': 'left', 'O': 'right'},
+    'O': {'N': 'left', 'Q': 'below', 'P': 'right'},
+    'P': {'O': 'left', 'R': 'below'},
+    'Q': {'I': 'below', 'O': 'above', 'R': 'right'},
+    'R': {'Q': 'left', 'P': 'above', 'S': 'below'},
+    'S': {'R': 'right', 'I': 'below', 'A': 'below'}
+}
+
+#                                                              BFS for pathfinding
+def bfs(graph, start, goal):
+    queue = deque([(start, [start])])
+    visited = set()
+    
+    while queue:
+        (vertex, path) = queue.popleft()
+        if vertex in visited:
+            continue
+        
+        visited.add(vertex)
+        
+        for neighbor, direction in graph[vertex].items():
+            if neighbor == goal:
+                return path + [neighbor]
+            
+            queue.append((neighbor, path + [neighbor]))
+    return None
+
+#                                                               Navigate the path
+def navigate_path(path, reverse=False):
+    current_position = path[0]
+    for next_position in path[1:]:
+        if reverse:
+            direction = get_reverse_direction(graph[next_position][current_position])
+        else:
+            direction = graph[current_position][next_position]
+            
+        print(f"Move {direction} to {next_position}")
+        # Add motor control logic here based on the direction
+        if direction == 'forward':
+            move_forward()
+        elif direction == 'backward':
+            move_backward()
+        elif direction == 'left':
+            turn_left()
+            move_forward()
+        elif direction == 'right':
+            turn_right()
+            move_forward()
+        
+        # Add intersection detection and counting here
+        while not detect_intersection():
+            follow_line()
+        
+        current_position = next_position
+        utime.sleep(1)  # Pause briefly at each intersection
+
+#                                                        reverse the path when going back 
+def get_reverse_direction(direction):
+    if direction == 'forward':
+        return 'backward'
+    elif direction == 'backward':
+        return 'forward'
+    elif direction == 'left':
+        return 'right'
+    elif direction == 'right':
+        return 'left'
+    return direction
 #                                                               motor controller
 frequency = 15000
 
@@ -58,7 +143,7 @@ current_state = 'forward'
 #                                                                  encoders
 # Define GPIO pins for wheel encoders
 left_encoder_pin = machine.Pin(12, machine.Pin.IN)
-right_encoder_pin = machine.Pin(13, machine.Pin.IN)
+right_encoder_pin = machine.Pin(14, machine.Pin.IN)
 
 # Define constants for wheel parameters
 WHEEL_RADIUS = 33.5  # Radius of the wheels in mm
@@ -172,9 +257,68 @@ def update_odometry():
     #data = f"{x},{y}\n"
     #s.send(data.encode())
     
+def forward():
+    enable_motor1.duty(1023)
+    enable_motor2.duty(1023)
+    pin1_motor1.value(1)
+    pin2_motor1.value(0)
+    pin1_motor2.value(1)
+    pin2_motor2.value(0)
+    # Code for moving forward
 
+def turnleft():
+    enable_motor1.duty(1023)
+    enable_motor2.duty(1023)
+    pin1_motor1.value(0)
+    pin2_motor1.value(1)
+    pin1_motor2.value(1)
+    pin2_motor2.value(0)
+    # Code for turning left
 
+def turnright():
+    enable_motor1.duty(1023)
+    enable_motor2.duty(1023)
+    pin1_motor1.value(1)
+    pin2_motor1.value(0)
+    pin1_motor2.value(0)
+    pin2_motor2.value(1)
+    # Code for turning right
 
+def stop(): # make the robot stop
+    enable_motor1.duty(1023)
+    enable_motor2.duty(1023)
+    pin1_motor1.value(0)
+    pin2_motor1.value(0)
+    pin1_motor2.value(0)
+    pin2_motor2.value(0)
+    # Code for stopping
+
+ def leftturn():
+    enable_motor1.duty(1023)
+    enable_motor2.duty(1023)
+    pin1_motor1.value(0)
+    pin2_motor1.value(1)
+    pin1_motor2.value(1)
+    pin2_motor2.value(0)
+    # Code for turning left
+
+def rightturn():
+    enable_motor1.duty(1023)
+    enable_motor2.duty(1023)
+    pin1_motor1.value(1)
+    pin2_motor1.value(0)
+    pin1_motor2.value(0)
+    pin2_motor2.value(1)
+    # Code for turning right
+
+def turnaround():
+    enable_motor1.duty(1023)
+    enable_motor2.duty(1023)
+    pin1_motor1.value(1)
+    pin2_motor1.value(0)
+    pin1_motor2.value(0)
+    pin2_motor2.value(1)
+    # Code for turning aroumd
 
 #rs and ls stand for left substract and right substract for states where either the left wheel or the right wheel are turning backwards
 #more functions can be added, depending on how the wheels turn, maybe both backwards
@@ -211,15 +355,9 @@ while wlan.isconnected():
     distance = sensor.distance_cm() 
     print(distance) #for the distance sensor
 
-    if current_state == 'forward':
-        print("sforward")
-        enable_motor1.duty(1023)
-        enable_motor2.duty(1023)
-        pin1_motor1.value(1)
-        pin2_motor1.value(0)
-        pin1_motor2.value(1)
-        pin2_motor2.value(0)
-        # Code for moving forward
+    if current_state == 'forward': #state in which there is FOLLOW THE LINE
+        print("forward")
+        def forward() #robot moves forward
 
         # Call the update_odometry function to update the current position and orientation
         update_odometry()
@@ -237,52 +375,34 @@ while wlan.isconnected():
     
     if current_state == 'turn_right':
         print("turn_right")
-        enable_motor1.duty(1023)
-        enable_motor2.duty(1023)
-        pin1_motor1.value(1)
-        pin2_motor1.value(0)
-        pin1_motor2.value(0)
-        pin2_motor2.value(1)
-        # Code for turning right
-
+        def turn_right() #robot turns right
         # Call the update_odometry function to update the current position and orientation
         update_odometry()
 
-        # check if it is necessary to update current_state
+        # return to going forward
         if counter == COUNTER_MAX:
             current_state = 'forward'
     
     if current_state == 'turn_left':
         print("turn_left")
-        enable_motor1.duty(1023)
-        enable_motor2.duty(1023)
-        pin1_motor1.value(0)
-        pin2_motor1.value(1)
-        pin1_motor2.value(1)
-        pin2_motor2.value(0)
-        # Code for turning left
+        def turnleft()
 
         # Call the update_odometry function to update the current position and orientation
         update_odometry()
 
-        # check if it is necessary to update current_state
+        # return to going forward
         if counter == COUNTER_MAX:
             current_state = 'forward'        
 
     if current_state == "stop": # this has to become turn around and find path
         print("stop")
-        enable_motor1.duty(1023)
-        enable_motor2.duty(1023)
-        pin1_motor1.value(0)
-        pin2_motor1.value(0)
-        pin1_motor2.value(0)
-        pin2_motor2.value(0)
+        def stop()
         # Code for stopping
 
         # Call the update_odometry function to update the current position and orientation
         update_odometry()   
 
-        # check if it is necessary to update current_state
+        # return to going forward
         if counter == COUNTER_MAX:
             current_state = 'forward'
 
