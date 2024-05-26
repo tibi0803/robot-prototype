@@ -124,6 +124,7 @@ graph = {
 }
 
 #                                                              BFS for pathfinding
+#this function finds the path
 def bfs(graph, start, goal):
     queue = deque([(start, [start])])
     visited = set()
@@ -142,46 +143,73 @@ def bfs(graph, start, goal):
             queue.append((neighbor, path + [neighbor]))
     return None
 
+#                                                             intersection detection
+def detect_intersection():
+    if s1value < 3500 or s5value < 3500
+        return True
+    return False
+
 #                                                               Navigate the path
-def navigate_path(path, reverse=False):
+# Possible orientations
+orientations = ['north', 'east', 'south', 'west']
+
+# Initial orientation
+current_orientation = 'north'
+
+# Function to update orientation based on turn
+def update_orientation(turn):
+    global current_orientation
+    idx = orientations.index(current_orientation)
+    if turn == 'left':
+        current_orientation = orientations[(idx + 1) % 4]
+    elif turn == 'right':
+        current_orientation = orientations[(idx - 1) % 4]
+    elif turn == 'turnaround':
+        current_orientation = orientations[(idx + 2) % 4]
+
+# Function to get direction relative to current orientation
+def get_relative_direction(direction):
+    idx = orientations.index(current_orientation)
+    if direction == 'above':
+        return orientations[idx]
+    elif direction == 'right':
+        return orientations[(idx + 1) % 4]
+    elif direction == 'below':
+        return orientations[(idx + 2) % 4]
+    elif direction == 'left':
+        return orientations[(idx + 3) % 4]
+
+# Navigate the path with dynamic orientation
+def navigate_path(path):
+    global current_orientation
     current_position = path[0]
     for next_position in path[1:]:
-        if reverse:
-            direction = get_reverse_direction(graph[next_position][current_position])
-        else:
-            direction = graph[current_position][next_position]
-            
-        print(f"Move {direction} to {next_position}")
-        # Add motor control logic here based on the direction
-        if direction == 'forward':
-            move_forward()
-        elif direction == 'backward':
-            move_backward()
-        elif direction == 'left':
-            turn_left()
-            move_forward()
-        elif direction == 'right':
-            turn_right()
-            move_forward()
+        direction = graph[current_position][next_position]
+        relative_direction = get_relative_direction(direction)
         
-        # Add intersection detection and counting here
-        while not detect_intersection():
+        print(f"Move {relative_direction} to {next_position}")
+        
+        if relative_direction == 'north':
+            follow_line()
+        elif relative_direction == 'west':
+            leftturn()
+            update_orientation('left')
+            follow_line()
+        elif relative_direction == 'east':
+            rightturn()
+            update_orientation('right')
+            follow_line()
+        elif relative_direction == 'south':
+            turnaround()
+            update_orientation('turnaround')
             follow_line()
         
+        while not detect_intersection():
+            follow_line()
+
         current_position = next_position
         utime.sleep(1)  # Pause briefly at each intersection
 
-#                                                        reverse the path when going back 
-def get_reverse_direction(direction):
-    if direction == 'forward':
-        return 'backward'
-    elif direction == 'backward':
-        return 'forward'
-    elif direction == 'left':
-        return 'right'
-    elif direction == 'right':
-        return 'left'
-    return direction
 #                                                               motor controller
 frequency = 15000
 
@@ -315,12 +343,45 @@ def update_odometry():
     # Normalize robot orientation to the range [-pi, pi]
     theta = theta % (2 * math.pi)
 
-    #s.send(str(x) + str(y))
-    #send info to the laptop for the plot
+def follow_line():
+    if current_state == 'forward': #state in which there is FOLLOW THE LINE
+        print("forward")
+        forward() #robot moves forward
 
-    # Send x and y coordinates as a comma-separated string
-    #data = f"{x},{y}\n"
-    #s.send(data.encode())
+        # Call the update_odometry function to update the current position and orientation
+        update_odometry()
+
+        if s1value < 3500 or s2value < 1600:
+            current_state = 'turn_left'
+            counter = 0
+        elif s5value < 3500 or s4value < 1600:
+            current_state = 'turn_right'
+            counter = 0
+        elif distance > 5.0:
+            current_state = "stop"
+            counter = 0
+
+    
+    if current_state == 'turn_right':
+        print("turn_right")
+        turnright()
+        # Call the update_odometry function to update the current position and orientation
+        update_odometry()
+
+        # return to going forward
+        if counter == COUNTER_MAX:
+            current_state = 'forward'
+    
+    if current_state == 'turn_left':
+        print("turn_left")
+        turnleft()
+
+        # Call the update_odometry function to update the current position and orientation
+        update_odometry()
+
+        # return to going forward
+        if counter == COUNTER_MAX:
+            current_state = 'forward'
     
 def forward():
     enable_motor1.duty(1023)
@@ -420,56 +481,7 @@ while wlan.isconnected():
     distance = sensor.distance_cm() 
     #print(distance) #for the distance sensor
 
-    if current_state == 'forward': #state in which there is FOLLOW THE LINE
-        print("forward")
-        forward() #robot moves forward
-
-        # Call the update_odometry function to update the current position and orientation
-        update_odometry()
-
-        if s1value < 3500 or s2value < 1600:
-            current_state = 'turn_left'
-            counter = 0
-        elif s5value < 3500 or s4value < 1600:
-            current_state = 'turn_right'
-            counter = 0
-        elif distance > 5.0:
-            current_state = "stop"
-            counter = 0
-
-    
-    if current_state == 'turn_right':
-        print("turn_right")
-        turnright() #robot turns right
-        # Call the update_odometry function to update the current position and orientation
-        update_odometry()
-
-        # return to going forward
-        if counter == COUNTER_MAX:
-            current_state = 'forward'
-    
-    if current_state == 'turn_left':
-        print("turn_left")
-        turnleft()
-
-        # Call the update_odometry function to update the current position and orientation
-        update_odometry()
-
-        # return to going forward
-        if counter == COUNTER_MAX:
-            current_state = 'forward'        
-
-    if current_state == "stop": # this has to become turn around and find path
-        print("stop")
-        stop()
-        # Code for stopping
-
-        # Call the update_odometry function to update the current position and orientation
-        update_odometry()   
-
-        # return to going forward
-        if counter == COUNTER_MAX:
-            current_state = 'forward'
+    follow_line()
 
     # increment counter
     counter += 1
