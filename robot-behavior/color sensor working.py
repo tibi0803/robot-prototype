@@ -2,8 +2,8 @@ from machine import Pin, ADC, UART, time_pulse_us
 from time import sleep
 
 # Define pins
-CS0 = Pin(32, Pin.OUT)
-CS1 = Pin(35, Pin.IN)
+CS0 = Pin(21, Pin.OUT)
+CS1 = Pin(39, Pin.IN)
 CS2 = Pin(26, Pin.OUT)
 CS3 = Pin(25, Pin.OUT)
 CSOUT = Pin(27, Pin.IN)

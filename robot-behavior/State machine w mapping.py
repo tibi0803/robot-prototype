@@ -1,4 +1,4 @@
-from machine import Pin, PWM, ADC, UART
+from machine import Pin, PWM, ADC, UART, time_pulse_us
 import utime
 from hcsr04 import HCSR04 # for the distance sensor
 from time import sleep #   |^
@@ -33,6 +33,71 @@ sensor3.atten(ADC.ATTN_11DB)
 sensor4.atten(ADC.ATTN_11DB)
 sensor5.atten(ADC.ATTN_11DB)
 
+#                                                                color sensor
+# Define pins
+CS0 = Pin(21, Pin.OUT)
+CS1 = Pin(39, Pin.IN)
+CS2 = Pin(26, Pin.OUT)
+CS3 = Pin(25, Pin.OUT)
+CSOUT = Pin(27, Pin.IN)
+
+# Stores frequency read by the photodiodes
+redFrequency = 0
+greenFrequency = 0
+blueFrequency = 0
+
+# Stores the red. green and blue colors
+redColor = 0
+greenColor = 0
+blueColor = 0
+
+# Setting frequency scaling to 20%
+CS0.value(1)
+CS1.value(0)
+
+# scale values
+def scale_value(unscaled, from_min, from_max, to_min, to_max):
+    return (to_max-to_min)*(unscaled-from_min)/(from_max-from_min)+to_min
+
+def getcolor():
+    #Setting RED (R) filtered photodiodes to be read
+    CS2.value(0)
+    CS3.value(0)
+
+    #Reading the output frequency
+    redFrequency = time_pulse_us(CSOUT, 0)
+    #Remaping the value of the RED (R) frequency from 0 to 255
+    redColor = scale_value(redFrequency, 8, 20, 255,0);
+
+    #Setting GREEN filtered photodiodes to be read
+    CS2.value(1)
+    CS3.value(1)
+
+    #Reading the output frequency
+    greenFrequency = time_pulse_us(CSOUT, 0)
+    #Remaping the value of the GREEN frequency from 0 to 255
+    greenColor = scale_value(greenFrequency, 23, 55, 255,0)
+
+    #Setting BLUE filtered photodiodes to be read
+    CS2.value(0)
+    CS3.value(1)
+
+    #Reading the output frequency
+    blueFrequency = time_pulse_us(CSOUT, 0)
+    #Remaping the value of the BLUE frequency from 0 to 255
+    blueColor = scale_value(blueFrequency, 11, 43, 255,0)
+
+    if redColor > greenColor and redColor > blueColor:
+        currentColor = "red"
+    
+    if greenColor > redColor and greenColor > blueColor:
+        currentColor = "green"
+    
+    if blueColor > redColor and blueColor > greenColor:
+        currentColor = "blue"
+    
+    print(redColor, greenColor, blueColor, currentColor)
+    sleep(0.5)
 
 #                                                        graph that represents the map
 
@@ -270,7 +335,7 @@ def turnleft():
     enable_motor1.duty(1023)
     enable_motor2.duty(1023)
     pin1_motor1.value(0)
-    pin2_motor1.value(1)
+    pin2_motor1.value(0)
     pin1_motor2.value(1)
     pin2_motor2.value(0)
     # Code for turning left
@@ -281,7 +346,7 @@ def turnright():
     pin1_motor1.value(1)
     pin2_motor1.value(0)
     pin1_motor2.value(0)
-    pin2_motor2.value(1)
+    pin2_motor2.value(0)
     # Code for turning right
 
 def stop(): # make the robot stop
@@ -293,7 +358,8 @@ def stop(): # make the robot stop
     pin2_motor2.value(0)
     # Code for stopping
 
- def leftturn():
+# tunrs for navigation need to be tested in action and calibrated so that the robot lands in the middle of the line in the direction it turned
+def leftturn():
     enable_motor1.duty(1023)
     enable_motor2.duty(1023)
     pin1_motor1.value(0)
@@ -320,8 +386,7 @@ def turnaround():
     pin2_motor2.value(1)
     # Code for turning aroumd
 
-#rs and ls stand for left substract and right substract for states where either the left wheel or the right wheel are turning backwards
-#more functions can be added, depending on how the wheels turn, maybe both backwards
+
 
 
 #                                                                  MAIN LOOP
@@ -348,16 +413,16 @@ while wlan.isconnected():
     s3value = sensor3.read()
     s4value = sensor4.read()
     s5value = sensor5.read()
-    print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
+    #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
 
-    
+    getcolor()
 
     distance = sensor.distance_cm() 
-    print(distance) #for the distance sensor
+    #print(distance) #for the distance sensor
 
     if current_state == 'forward': #state in which there is FOLLOW THE LINE
         print("forward")
-        def forward() #robot moves forward
+        forward() #robot moves forward
 
         # Call the update_odometry function to update the current position and orientation
         update_odometry()
@@ -375,7 +440,7 @@ while wlan.isconnected():
     
     if current_state == 'turn_right':
         print("turn_right")
-        def turn_right() #robot turns right
+        turnright() #robot turns right
         # Call the update_odometry function to update the current position and orientation
         update_odometry()
 
@@ -385,7 +450,7 @@ while wlan.isconnected():
     
     if current_state == 'turn_left':
         print("turn_left")
-        def turnleft()
+        turnleft()
 
         # Call the update_odometry function to update the current position and orientation
         update_odometry()
@@ -396,7 +461,7 @@ while wlan.isconnected():
 
     if current_state == "stop": # this has to become turn around and find path
         print("stop")
-        def stop()
+        stop()
         # Code for stopping
 
         # Call the update_odometry function to update the current position and orientation
