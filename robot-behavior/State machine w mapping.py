@@ -15,7 +15,7 @@ import utime # |^
 #establish a Wi-Fi connection using the network
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
-wlan.connect('House of Mici', '76542527')
+wlan.connect('HANZE-ZP11', 'sqr274YzW6')
 
 
 #                                                                  line sensor 
@@ -108,6 +108,9 @@ graph = {
     'D': {'C': 'right', 'E': 'left' },
     'E': {'F': 'left', 'H': 'above', 'D': 'right'},
     'F': {'G': 'above', 'E': 'right'},
+
+
+
     'G': {'J': 'above', 'F': 'below', 'H': 'right'},
     'H': {'G': 'left', 'I': 'above', 'E': 'below'},
     'I': {'J': 'left', 'H': 'below', 'Q': 'above', 'S': 'right'},
@@ -145,9 +148,9 @@ def bfs(graph, start, goal):
 
 #                                                             intersection detection
 def detect_intersection():
-    if s1value < 3500 or s5value < 3500
+    if s1value < 3500 or s5value < 3500:
         return True
-    return False
+    
 
 #                                                               Navigate the path
 # Possible orientations
@@ -424,7 +427,7 @@ def leftturn():
     enable_motor1.duty(1023)
     enable_motor2.duty(1023)
     pin1_motor1.value(0)
-    pin2_motor1.value(1)
+    pin2_motor1.value(0)
     pin1_motor2.value(1)
     pin2_motor2.value(0)
     # Code for turning left
@@ -435,7 +438,7 @@ def rightturn():
     pin1_motor1.value(1)
     pin2_motor1.value(0)
     pin1_motor2.value(0)
-    pin2_motor2.value(1)
+    pin2_motor2.value(0)
     # Code for turning right
 
 def turnaround():
@@ -459,7 +462,7 @@ print('Connected to Wi-Fi')
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 #connect to the laptop using the socket object
-s.connect(('192.168.0.100', 12345)) #replace the values
+s.connect(('10.149.34.15', 12345)) #replace the values
 
 #you can send data to the laptop using the send() method
 #s.send('Hello, laptop!')
@@ -475,13 +478,12 @@ while wlan.isconnected():
     s4value = sensor4.read()
     s5value = sensor5.read()
     #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
-
-    getcolor()
-
-    distance = sensor.distance_cm() 
+    distance = sensor.distance_cm()
     #print(distance) #for the distance sensor
 
-    follow_line()
+    path = bfs(graph, 'E', 'M')
+
+    navigate_path(path)    
 
     # increment counter
     counter += 1
