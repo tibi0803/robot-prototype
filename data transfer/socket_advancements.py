@@ -5,7 +5,7 @@ from matplotlib.animation import FuncAnimation
 
 # Create a socket object
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind(('10.149.34.15', 12345))
+s.bind(('192.168.0.101', 12345))
 s.listen(5)
 print('Waiting for connection...')
 

@@ -323,8 +323,8 @@ def update_odometry():
     #s.send(data.encode())
     
 def forward():
-    enable_motor1.duty(1023)
-    enable_motor2.duty(1023)
+    enable_motor1.duty(300)
+    enable_motor2.duty(300)
     pin1_motor1.value(1)
     pin2_motor1.value(0)
     pin1_motor2.value(1)
@@ -332,8 +332,8 @@ def forward():
     # Code for moving forward
 
 def turnleft():
-    enable_motor1.duty(1023)
-    enable_motor2.duty(1023)
+    enable_motor1.duty(300)
+    enable_motor2.duty(300)
     pin1_motor1.value(0)
     pin2_motor1.value(0)
     pin1_motor2.value(1)
@@ -341,8 +341,8 @@ def turnleft():
     # Code for turning left
 
 def turnright():
-    enable_motor1.duty(1023)
-    enable_motor2.duty(1023)
+    enable_motor1.duty(300)
+    enable_motor2.duty(300)
     pin1_motor1.value(1)
     pin2_motor1.value(0)
     pin1_motor2.value(0)

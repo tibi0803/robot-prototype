@@ -7,7 +7,7 @@ import time
 import machine #|^
 import socket   #communication w the laptop
 import network  #|^
-from collections import deque #mapping
+#from collections import deque #mapping (try import *)
 import utime # |^
 
 #                                                              network connection
@@ -15,7 +15,7 @@ import utime # |^
 #establish a Wi-Fi connection using the network
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
-wlan.connect('HANZE-ZP11', 'sqr274YzW6')
+wlan.connect('House of Mici', '76542527')
 
 
 #                                                                  line sensor 
@@ -108,9 +108,6 @@ graph = {
     'D': {'C': 'right', 'E': 'left' },
     'E': {'F': 'left', 'H': 'above', 'D': 'right'},
     'F': {'G': 'above', 'E': 'right'},
-
-
-
     'G': {'J': 'above', 'F': 'below', 'H': 'right'},
     'H': {'G': 'left', 'I': 'above', 'E': 'below'},
     'I': {'J': 'left', 'H': 'below', 'Q': 'above', 'S': 'right'},
@@ -127,13 +124,17 @@ graph = {
 }
 
 #                                                              BFS for pathfinding
+#start = 'E'
+#start = graph['E']
+#goal = graph['M']
 #this function finds the path
+
 def bfs(graph, start, goal):
-    queue = deque([(start, [start])])
+    queue = [(start, [start])]
     visited = set()
     
     while queue:
-        (vertex, path) = queue.popleft()
+        vertex, path = queue.pop(0)  # pop from the front of the list
         if vertex in visited:
             continue
         
@@ -234,7 +235,7 @@ counter = 0
 COUNTER_MAX = 5
 
 #define the variable for                                         current state
-current_state = 'forward'
+#current_state = 'forward'
 
 #                                                                  encoders
 # Define GPIO pins for wheel encoders
@@ -347,24 +348,29 @@ def update_odometry():
     theta = theta % (2 * math.pi)
 
 def follow_line():
+    if s3value < 3500:
+        current_state = 'forward'
+        counter = 0
+    elif s2value < 1600:
+        current_state = 'turn_left'
+        counter = 0
+    elif s4value < 1600:
+        current_state = 'turn_right'
+        counter = 0
+    elif distance > 5.0:
+        current_state = "stop"
+        counter = 0
+
     if current_state == 'forward': #state in which there is FOLLOW THE LINE
         print("forward")
         forward() #robot moves forward
-
         # Call the update_odometry function to update the current position and orientation
         update_odometry()
 
-        if s1value < 3500 or s2value < 1600:
-            current_state = 'turn_left'
-            counter = 0
-        elif s5value < 3500 or s4value < 1600:
-            current_state = 'turn_right'
-            counter = 0
-        elif distance > 5.0:
-            current_state = "stop"
-            counter = 0
+        # return to going forward
+        if counter == COUNTER_MAX:
+            current_state = 'forward'
 
-    
     if current_state == 'turn_right':
         print("turn_right")
         turnright()
@@ -462,7 +468,7 @@ print('Connected to Wi-Fi')
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 #connect to the laptop using the socket object
-s.connect(('10.149.34.15', 12345)) #replace the values
+s.connect(('192.168.0.101', 12345)) #replace the values
 
 #you can send data to the laptop using the send() method
 #s.send('Hello, laptop!')
@@ -483,6 +489,11 @@ while wlan.isconnected():
 
     path = bfs(graph, 'E', 'M')
 
+    if path:
+        print("Path found:", path)
+    else:
+        print("No path found")
+    
     navigate_path(path)    
 
     # increment counter
