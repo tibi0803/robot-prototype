@@ -7,7 +7,7 @@ import time
 import machine #|^
 import socket   #communication w the laptop
 import network  #|^
-from collections import deque #mapping
+#from collections import deque #mapping
 import utime # |^
 
 #                                                              network connection
@@ -125,11 +125,11 @@ graph = {
 
 #                                                              BFS for pathfinding
 def bfs(graph, start, goal):
-    queue = deque([(start, [start])])
+    queue = [(start, [start])]
     visited = set()
     
     while queue:
-        (vertex, path) = queue.popleft()
+        vertex, path = queue.pop(0)  # pop from the front of the list
         if vertex in visited:
             continue
         
@@ -398,7 +398,7 @@ print('Connected to Wi-Fi')
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 #connect to the laptop using the socket object
-s.connect(('192.168.0.100', 12345)) #replace the values
+s.connect(('192.168.0.101---', 12345)) #replace the values
 
 #you can send data to the laptop using the send() method
 #s.send('Hello, laptop!')
@@ -413,7 +413,7 @@ while wlan.isconnected():
     s3value = sensor3.read()
     s4value = sensor4.read()
     s5value = sensor5.read()
-    #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
+    print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
 
     getcolor()
 
@@ -433,9 +433,9 @@ while wlan.isconnected():
         elif s5value < 3500 or s4value < 1600:
             current_state = 'turn_right'
             counter = 0
-        elif distance > 5.0:
-            current_state = "stop"
-            counter = 0
+        #elif distance > 5.0:
+            #current_state = "stop"
+            #counter = 0
 
     
     if current_state == 'turn_right':
@@ -459,17 +459,17 @@ while wlan.isconnected():
         if counter == COUNTER_MAX:
             current_state = 'forward'        
 
-    if current_state == "stop": # this has to become turn around and find path
-        print("stop")
-        stop()
+    #if current_state == "stop": # this has to become turn around and find path
+     #   print("stop")
+      #  stop()
         # Code for stopping
 
         # Call the update_odometry function to update the current position and orientation
-        update_odometry()   
+       # update_odometry()   
 
         # return to going forward
-        if counter == COUNTER_MAX:
-            current_state = 'forward'
+        #if counter == COUNTER_MAX:
+         #   current_state = 'forward'
 
     # increment counter
     counter += 1

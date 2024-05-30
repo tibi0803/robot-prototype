@@ -13,11 +13,18 @@ import utime # |^
 #                                                              network connection
 
 #establish a Wi-Fi connection using the network
-wlan = network.WLAN(network.STA_IF)
-wlan.active(True)
-wlan.connect('House of Mici', '76542527')
+#wlan = network.WLAN(network.STA_IF)
+#wlan.active(True)
+#wlan.connect('House of Mici', '76542527')
 
+#                                                                    magnet
 
+mag = machine.Pin(4, machine.Pin.OUT)
+def electromagnet_on():
+    mag.on()  # Turn on the electromagnet
+
+def electromagnet_off():
+    mag.off()  # Turn off the electromagnet
 #                                                                  line sensor 
 
 sensor1 = ADC(Pin(32))  # Valid ADC1 pin
@@ -45,6 +52,7 @@ CSOUT = Pin(27, Pin.IN)
 redFrequency = 0
 greenFrequency = 0
 blueFrequency = 0
+
 
 # Stores the red. green and blue colors
 redColor = 0
@@ -192,24 +200,44 @@ def navigate_path(path):
         relative_direction = get_relative_direction(direction)
         
         print(f"Move {relative_direction} to {next_position}")
-        
+
+        #if detect_intersection():
         if relative_direction == 'north':
             follow_line()
+            print('going straight')
+            if detect_intersection():
+                current_position = next_position
+                utime.sleep(1)  # Pause briefly at each intersection
+
         elif relative_direction == 'west':
             leftturn()
+            print('turning left')
             update_orientation('left')
             follow_line()
+            if detect_intersection():
+                current_position = next_position
+                utime.sleep(1)  # Pause briefly at each intersection
         elif relative_direction == 'east':
             rightturn()
+            print('turning right')
             update_orientation('right')
             follow_line()
+            if detect_intersection():
+                current_position = next_position
+                utime.sleep(1)  # Pause briefly at each intersection
+
         elif relative_direction == 'south':
             turnaround()
+            print('turning around')
             update_orientation('turnaround')
             follow_line()
+            if detect_intersection():
+                current_position = next_position
+                utime.sleep(1)  # Pause briefly at each intersection
         
-        while not detect_intersection():
-            follow_line()
+        #while not detect_intersection():
+        #    follow_line()
+        #   print('just following the line')
 
         current_position = next_position
         utime.sleep(1)  # Pause briefly at each intersection
@@ -358,9 +386,6 @@ def follow_line():
     elif s4value < 1600:
         current_state = 'turn_right'
         counter = 0
-    elif distance > 5.0:
-        current_state = "stop"
-        counter = 0
 
     if current_state == 'forward': #state in which there is FOLLOW THE LINE
         print("forward")
@@ -461,33 +486,28 @@ def turnaround():
 
 
 #                                                                  MAIN LOOP
-while not wlan.isconnected():
-    pass
-print('Connected to Wi-Fi')
+#while not wlan.isconnected():
+    #pass
+#print('Connected to Wi-Fi')
 
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 #connect to the laptop using the socket object
-s.connect(('192.168.0.101', 12345)) #replace the values
+#s.connect(('192.168.0.101', 12345)) #replace the values
 
 #you can send data to the laptop using the send() method
 #s.send('Hello, laptop!')
 
 #   ^ part for connecting to the laptop
 
-
-while wlan.isconnected():
-
+while True:
     s1value = sensor1.read()
     s2value = sensor2.read()
     s3value = sensor3.read()
     s4value = sensor4.read()
     s5value = sensor5.read()
-    #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
-    distance = sensor.distance_cm()
-    #print(distance) #for the distance sensor
-
+    
     path = bfs(graph, 'E', 'M')
 
     if path:
@@ -499,5 +519,3 @@ while wlan.isconnected():
 
     # increment counter
     counter += 1
-
-    
