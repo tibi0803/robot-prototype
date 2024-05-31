@@ -155,8 +155,17 @@ def bfs(graph, start, goal):
             queue.append((neighbor, path + [neighbor]))
     return None
 
+#                                                      reading the values for the line sensor
+def read_sensors():
+    global s1value, s2value, s3value, s4value, s5value
+    s1value = sensor1.read()
+    s2value = sensor2.read()
+    s3value = sensor3.read()
+    s4value = sensor4.read()
+    s5value = sensor5.read()
 #                                                             intersection detection
 def detect_intersection():
+    read_sensors()
     if s1value < 3500 or s5value < 3500:
         return True
     
@@ -203,37 +212,37 @@ def navigate_path(path):
 
         if relative_direction == 'north':
             print('going straight')
-            while not detect_intersection():
-                follow_line()
-            current_position = next_position
-            utime.sleep(1)  # Pause briefly at each intersection
+            #while not detect_intersection():
+                #follow_line()
+            #current_position = next_position
+            #utime.sleep(1)  # Pause briefly at each intersection
 
         elif relative_direction == 'west':
             leftturn()
             print('turning left')
             update_orientation('left')
-            while not detect_intersection():
-                follow_line()
-            current_position = next_position
-            utime.sleep(1)  # Pause briefly at each intersection
+            #while not detect_intersection():
+                #follow_line()
+            #current_position = next_position
+            #utime.sleep(1)  # Pause briefly at each intersection
 
         elif relative_direction == 'east':
             rightturn()
             print('turning right')
             update_orientation('right')
-            while not detect_intersection():
-                follow_line()
-            current_position = next_position
-            utime.sleep(1)  # Pause briefly at each intersection
+            #while not detect_intersection():
+                #follow_line()
+            #current_position = next_position
+            #utime.sleep(1)  # Pause briefly at each intersection
 
         elif relative_direction == 'south':
             turnaround()
             print('turning around')
             update_orientation('turnaround')
-            while not detect_intersection():
-                follow_line()
-            current_position = next_position
-            utime.sleep(1)  # Pause briefly at each intersection
+            #while not detect_intersection():
+                #follow_line()
+            #current_position = next_position
+            #utime.sleep(1)  # Pause briefly at each intersection
         
         #while not detect_intersection():
         #    follow_line()
@@ -502,12 +511,7 @@ def turnaround():
 #   ^ part for connecting to the laptop
 
 while True:
-    s1value = sensor1.read()
-    s2value = sensor2.read()
-    s3value = sensor3.read()
-    s4value = sensor4.read()
-    s5value = sensor5.read()
-
+    
     path = bfs(graph, 'E', 'M')
 
     if path:
@@ -515,7 +519,10 @@ while True:
     else:
         print("No path found")
     
+    while not detect_intersection():
+        follow_line()
+    
     navigate_path(path)    
-
+    
     # increment counter
     counter += 1
