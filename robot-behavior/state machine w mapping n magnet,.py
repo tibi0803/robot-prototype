@@ -201,46 +201,46 @@ def navigate_path(path):
         
         print(f"Move {relative_direction} to {next_position}")
 
-        #if detect_intersection():
         if relative_direction == 'north':
-            follow_line()
             print('going straight')
-            if detect_intersection():
-                current_position = next_position
-                utime.sleep(1)  # Pause briefly at each intersection
+            while not detect_intersection():
+                follow_line()
+            current_position = next_position
+            utime.sleep(1)  # Pause briefly at each intersection
 
         elif relative_direction == 'west':
             leftturn()
             print('turning left')
             update_orientation('left')
-            follow_line()
-            if detect_intersection():
-                current_position = next_position
-                utime.sleep(1)  # Pause briefly at each intersection
+            while not detect_intersection():
+                follow_line()
+            current_position = next_position
+            utime.sleep(1)  # Pause briefly at each intersection
+
         elif relative_direction == 'east':
             rightturn()
             print('turning right')
             update_orientation('right')
-            follow_line()
-            if detect_intersection():
-                current_position = next_position
-                utime.sleep(1)  # Pause briefly at each intersection
+            while not detect_intersection():
+                follow_line()
+            current_position = next_position
+            utime.sleep(1)  # Pause briefly at each intersection
 
         elif relative_direction == 'south':
             turnaround()
             print('turning around')
             update_orientation('turnaround')
-            follow_line()
-            if detect_intersection():
-                current_position = next_position
-                utime.sleep(1)  # Pause briefly at each intersection
+            while not detect_intersection():
+                follow_line()
+            current_position = next_position
+            utime.sleep(1)  # Pause briefly at each intersection
         
         #while not detect_intersection():
         #    follow_line()
         #   print('just following the line')
 
-        current_position = next_position
-        utime.sleep(1)  # Pause briefly at each intersection
+        #current_position = next_position
+        #utime.sleep(1)  # Pause briefly at each intersection
 
 #                                                               motor controller
 frequency = 15000
@@ -388,7 +388,7 @@ def follow_line():
         counter = 0
 
     if current_state == 'forward': #state in which there is FOLLOW THE LINE
-        print("forward")
+        #print("forward")
         forward() #robot moves forward
         # Call the update_odometry function to update the current position and orientation
         update_odometry()
@@ -398,7 +398,7 @@ def follow_line():
             current_state = 'forward'
 
     if current_state == 'turn_right':
-        print("turn_right")
+        #print("turn_right")
         turnright()
         # Call the update_odometry function to update the current position and orientation
         update_odometry()
@@ -408,7 +408,7 @@ def follow_line():
             current_state = 'forward'
     
     if current_state == 'turn_left':
-        print("turn_left")
+        #print("turn_left")
         turnleft()
 
         # Call the update_odometry function to update the current position and orientation
@@ -507,7 +507,7 @@ while True:
     s3value = sensor3.read()
     s4value = sensor4.read()
     s5value = sensor5.read()
-    
+
     path = bfs(graph, 'E', 'M')
 
     if path:
