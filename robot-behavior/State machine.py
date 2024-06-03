@@ -415,7 +415,6 @@ while wlan.isconnected():
     s5value = sensor5.read()
     print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
 
-    getcolor()
 
     distance = sensor.distance_cm() 
     #print(distance) #for the distance sensor

@@ -132,10 +132,6 @@ graph = {
 }
 
 #                                                              BFS for pathfinding
-#start = 'E'
-#start = graph['E']
-#goal = graph['M']
-#this function finds the path
 
 def bfs(graph, start, goal):
     queue = [(start, [start])]
@@ -273,7 +269,7 @@ counter = 0
 COUNTER_MAX = 5
 
 #define the variable for                                         current state
-#current_state = 'forward'
+current_state = 'forward'
 
 #                                                                  encoders
 # Define GPIO pins for wheel encoders
@@ -386,42 +382,37 @@ def update_odometry():
     theta = theta % (2 * math.pi)
 
 def follow_line():
-    if s3value < 3500:
-        current_state = 'forward'
-        counter = 0
-    elif s2value < 1600:
-        current_state = 'turn_left'
-        counter = 0
-    elif s4value < 1600:
-        current_state = 'turn_right'
-        counter = 0
+    global current_state, counter, COUNTER_MAX
 
     if current_state == 'forward': #state in which there is FOLLOW THE LINE
-        #print("forward")
+        print("forward")
         forward() #robot moves forward
+
         # Call the update_odometry function to update the current position and orientation
-        update_odometry()
+        #update_odometry()
 
-        # return to going forward
-        if counter == COUNTER_MAX:
-            current_state = 'forward'
-
+        if s1value < 3500 or s2value < 1600:
+            current_state = 'turn_left'
+            counter = 0
+        elif s5value < 3500 or s4value < 1600:
+            current_state = 'turn_right'
+            counter = 0
+           
     if current_state == 'turn_right':
-        #print("turn_right")
-        turnright()
+        print("turn_right")
+        turnright() #robot turns right
         # Call the update_odometry function to update the current position and orientation
-        update_odometry()
+        #update_odometry()
 
         # return to going forward
         if counter == COUNTER_MAX:
             current_state = 'forward'
     
     if current_state == 'turn_left':
-        #print("turn_left")
+        print("turn_left")
         turnleft()
-
         # Call the update_odometry function to update the current position and orientation
-        update_odometry()
+        #update_odometry()
 
         # return to going forward
         if counter == COUNTER_MAX:
@@ -512,17 +503,27 @@ def turnaround():
 
 while True:
     
-    path = bfs(graph, 'E', 'M')
+    #path = bfs(graph, 'E', 'M')
 
-    if path:
-        print("Path found:", path)
-    else:
-        print("No path found")
+    #if path:
+   #     print("Path found:", path)
+   # else:
+    #    print("No path found")
     
-    while not detect_intersection():
-        follow_line()
+    #while not detect_intersection():
+    #    follow_line()
     
-    navigate_path(path)    
-    
+    #navigate_path(path)    
+
+    s1value = sensor1.read()
+    s2value = sensor2.read()
+    s3value = sensor3.read()
+    s4value = sensor4.read()
+    s5value = sensor5.read()
+    #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
+
+    follow_line()
+
     # increment counter
     counter += 1
+    utime.sleep(0.1)
