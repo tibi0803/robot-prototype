@@ -162,7 +162,7 @@ def read_sensors():
 #                                                             intersection detection
 def detect_intersection():
     read_sensors()
-    if s1value < 3500 or s5value < 3500:
+    if s1value < 1500 or s5value < 1500:
         return True
     
 
@@ -200,7 +200,10 @@ def get_relative_direction(direction):
 def navigate_path(path):
     global current_orientation
     current_position = path[0]
-    for next_position in path[1:]:
+    path_index = 1  # Start from the second element
+    
+    while path_index < len(path):
+        next_position = path[path_index]
         direction = graph[current_position][next_position]
         relative_direction = get_relative_direction(direction)
         
@@ -208,44 +211,45 @@ def navigate_path(path):
 
         if relative_direction == 'north':
             print('going straight')
-            #while not detect_intersection():
-                #follow_line()
-            #current_position = next_position
-            #utime.sleep(1)  # Pause briefly at each intersection
+            while not detect_intersection():
+                follow_line()
+                utime.sleep(0.1)  # Short delay to prevent tight looping
+            current_position = next_position
+            path_index += 1
+            utime.sleep(1)  # Pause briefly at each intersection
 
         elif relative_direction == 'west':
             leftturn()
             print('turning left')
             update_orientation('left')
-            #while not detect_intersection():
-                #follow_line()
-            #current_position = next_position
-            #utime.sleep(1)  # Pause briefly at each intersection
+            while not detect_intersection():
+                follow_line()
+                utime.sleep(0.1)  # Short delay to prevent tight looping
+            current_position = next_position
+            path_index += 1
+            utime.sleep(1)  # Pause briefly at each intersection
 
         elif relative_direction == 'east':
             rightturn()
             print('turning right')
             update_orientation('right')
-            #while not detect_intersection():
-                #follow_line()
-            #current_position = next_position
-            #utime.sleep(1)  # Pause briefly at each intersection
+            while not detect_intersection():
+                follow_line()
+                utime.sleep(0.1)  # Short delay to prevent tight looping
+            current_position = next_position
+            path_index += 1
+            utime.sleep(1)  # Pause briefly at each intersection
 
         elif relative_direction == 'south':
             turnaround()
             print('turning around')
             update_orientation('turnaround')
-            #while not detect_intersection():
-                #follow_line()
-            #current_position = next_position
-            #utime.sleep(1)  # Pause briefly at each intersection
-        
-        #while not detect_intersection():
-        #    follow_line()
-        #   print('just following the line')
-
-        #current_position = next_position
-        #utime.sleep(1)  # Pause briefly at each intersection
+            while not detect_intersection():
+                follow_line()
+                utime.sleep(0.1)  # Short delay to prevent tight looping
+            current_position = next_position
+            path_index += 1
+            utime.sleep(1)  # Pause briefly at each intersection
 
 #                                                               motor controller
 frequency = 15000
@@ -502,28 +506,26 @@ def turnaround():
 #   ^ part for connecting to the laptop
 
 while True:
-    
-    #path = bfs(graph, 'E', 'M')
-
-    #if path:
-   #     print("Path found:", path)
-   # else:
-    #    print("No path found")
-    
-    #while not detect_intersection():
-    #    follow_line()
-    
-    #navigate_path(path)    
-
     s1value = sensor1.read()
     s2value = sensor2.read()
     s3value = sensor3.read()
     s4value = sensor4.read()
     s5value = sensor5.read()
     #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
+    
+    path = bfs(graph, 'E', 'M')
 
-    follow_line()
+    if path:
+        print("Path found:", path)
+    else:
+        print("No path found")
+        
+    navigate_path(path)    
+
+    
+
+    
 
     # increment counter
     counter += 1
-    utime.sleep(0.1)
+    #utime.sleep(0.1)
