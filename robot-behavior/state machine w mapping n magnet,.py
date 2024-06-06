@@ -8,7 +8,7 @@ import machine #|^
 import socket   #communication w the laptop
 import network  #|^
 #from collections import deque #mapping (try import *)
-import utime # |^
+#import utime # |^
 
 #                                                              network connection
 
@@ -20,6 +20,7 @@ import utime # |^
 #                                                                    magnet
 
 mag = machine.Pin(4, machine.Pin.OUT)
+
 def electromagnet_on():
     mag.on()  # Turn on the electromagnet
 
@@ -165,6 +166,44 @@ def detect_intersection():
     if s1value < 1500 or s5value < 1500:
         return True
     
+#                                                                    PATHS
+
+pathEN = bfs(graph, 'E', 'N') #first path| it is fixed
+
+pathNA = bfs(graph, 'N', 'A')
+pathNB = bfs(graph, 'N', 'B')
+pathNC = bfs(graph, 'N', 'C')
+pathND = bfs(graph, 'N', 'D') # options of paths depending on the color of the first box
+
+pathAM = bfs(graph, 'A', 'M')
+pathBM = bfs(graph, 'B', 'M')
+pathCM = bfs(graph, 'C', 'M')
+pathDM = bfs(graph, 'D', 'M')# options of paths for goiong to the second box
+
+pathMA = bfs(graph, 'M', 'A')
+pathMB = bfs(graph, 'M', 'B')
+pathMC = bfs(graph, 'M', 'C')
+pathMD = bfs(graph, 'M', 'D') # options of paths depending on the color of the second box
+
+pathAL = bfs(graph, 'A', 'L')
+pathBL = bfs(graph, 'B', 'L')
+pathCL = bfs(graph, 'C', 'L')
+pathDL = bfs(graph, 'D', 'L')# options of paths for goiong to the third box
+
+pathLA = bfs(graph, 'L', 'A')
+pathLB = bfs(graph, 'L', 'B')
+pathLC = bfs(graph, 'L', 'C')
+pathLD = bfs(graph, 'L', 'D') # options of paths depending on the color of the third box
+
+pathAK = bfs(graph, 'A', 'K')
+pathBK = bfs(graph, 'B', 'K')
+pathCK = bfs(graph, 'C', 'K')
+pathDK = bfs(graph, 'D', 'K')# options of paths for goiong to the fourth box
+
+pathKA = bfs(graph, 'K', 'A')
+pathKB = bfs(graph, 'K', 'B')
+pathKC = bfs(graph, 'K', 'C')
+pathKD = bfs(graph, 'K', 'D') # options of paths depending on the color of the fourth box
 
 #                                                               Navigate the path
 # Possible orientations
@@ -307,7 +346,9 @@ prev_right_encoder_count = 0
 #Variables to store previous encoder states
 prev_left_encoder_state = 0
 prev_right_encoder_state = 0
+#                                                                    ms variable for the motors
 
+ms = 900
 
 def update_odometry():
     global x, y, theta, prev_left_encoder_count, prev_right_encoder_count, left_encoder_count, right_encoder_count, prev_left_encoder_state, prev_right_encoder_state, delta_right, delta_left, Rturn
@@ -395,36 +436,38 @@ def follow_line():
         # Call the update_odometry function to update the current position and orientation
         #update_odometry()
 
-        if s1value < 3500 or s2value < 1600:
+        if  s2value < 1600:
             current_state = 'turn_left'
             counter = 0
-        elif s5value < 3500 or s4value < 1600:
+        elif s4value < 1600:
             current_state = 'turn_right'
             counter = 0
            
     if current_state == 'turn_right':
         print("turn_right")
         turnright() #robot turns right
+        current_state = 'forward'
         # Call the update_odometry function to update the current position and orientation
         #update_odometry()
 
         # return to going forward
-        if counter == COUNTER_MAX:
-            current_state = 'forward'
+        #if counter == COUNTER_MAX:
+            #current_state = 'forward'
     
     if current_state == 'turn_left':
         print("turn_left")
         turnleft()
+        current_state = 'forward'
         # Call the update_odometry function to update the current position and orientation
         #update_odometry()
 
         # return to going forward
-        if counter == COUNTER_MAX:
-            current_state = 'forward'
+        #if counter == COUNTER_MAX:
+            #current_state = 'forward'
     
 def forward():
-    enable_motor1.duty(1023)
-    enable_motor2.duty(1023)
+    enable_motor1.duty(ms)
+    enable_motor2.duty(ms)
     pin1_motor1.value(1)
     pin2_motor1.value(0)
     pin1_motor2.value(1)
@@ -432,26 +475,28 @@ def forward():
     # Code for moving forward
 
 def turnleft():
-    enable_motor1.duty(1023)
-    enable_motor2.duty(1023)
+    enable_motor1.duty(ms)
+    enable_motor2.duty(ms)
     pin1_motor1.value(0)
     pin2_motor1.value(0)
     pin1_motor2.value(1)
     pin2_motor2.value(0)
+    utime.sleep(0.1)
     # Code for turning left
 
 def turnright():
-    enable_motor1.duty(1023)
-    enable_motor2.duty(1023)
+    enable_motor1.duty(ms)
+    enable_motor2.duty(ms)
     pin1_motor1.value(1)
     pin2_motor1.value(0)
     pin1_motor2.value(0)
     pin2_motor2.value(0)
+    utime.sleep(0.1)
     # Code for turning right
 
 def stop(): # make the robot stop
-    enable_motor1.duty(1023)
-    enable_motor2.duty(1023)
+    enable_motor1.duty(ms)
+    enable_motor2.duty(ms)
     pin1_motor1.value(0)
     pin2_motor1.value(0)
     pin1_motor2.value(0)
@@ -460,30 +505,33 @@ def stop(): # make the robot stop
 
 # tunrs for navigation need to be tested in action and calibrated so that the robot lands in the middle of the line in the direction it turned
 def leftturn():
-    enable_motor1.duty(1023)
-    enable_motor2.duty(1023)
+    enable_motor1.duty(ms)
+    enable_motor2.duty(ms)
     pin1_motor1.value(0)
     pin2_motor1.value(0)
     pin1_motor2.value(1)
     pin2_motor2.value(0)
+    utime.sleep(1) # adjust this value to make the robot turn the right
     # Code for turning left
 
 def rightturn():
-    enable_motor1.duty(1023)
-    enable_motor2.duty(1023)
+    enable_motor1.duty(ms)
+    enable_motor2.duty(ms)
     pin1_motor1.value(1)
     pin2_motor1.value(0)
     pin1_motor2.value(0)
     pin2_motor2.value(0)
+    utime.sleep(1)
     # Code for turning right
 
 def turnaround():
-    enable_motor1.duty(1023)
-    enable_motor2.duty(1023)
+    enable_motor1.duty(ms)
+    enable_motor2.duty(ms)
     pin1_motor1.value(1)
     pin2_motor1.value(0)
     pin1_motor2.value(0)
     pin2_motor2.value(1)
+    utime.sleep(1)
     # Code for turning aroumd
 
 
@@ -527,5 +575,5 @@ while True:
     
 
     # increment counter
-    counter += 1
+    #counter += 1
     #utime.sleep(0.1)
