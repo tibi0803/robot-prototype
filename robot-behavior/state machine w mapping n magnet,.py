@@ -582,7 +582,6 @@ def turnaround():
     #pass
 #print('Connected to Wi-Fi')
 
-
 #s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 #connect to the laptop using the socket object
