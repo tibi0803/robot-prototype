@@ -41,6 +41,12 @@ sensor3.atten(ADC.ATTN_11DB)
 sensor4.atten(ADC.ATTN_11DB)
 sensor5.atten(ADC.ATTN_11DB)
 
+s1value = sensor1.read()
+s2value = sensor2.read()
+s3value = sensor3.read()
+s4value = sensor4.read()
+s5value = sensor5.read()
+
 #                                                                color sensor
 # Define pins
 CS0 = Pin(21, Pin.OUT)
@@ -160,12 +166,33 @@ def read_sensors():
     s3value = sensor3.read()
     s4value = sensor4.read()
     s5value = sensor5.read()
+    #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
 #                                                             intersection detection
+
+intersection = 0
+prev_intersection = 0
+
 def detect_intersection():
-    read_sensors()
-    if s1value < 1500 or s5value < 1500:
-        return True
+    global intersection, prev_intersection
     
+    if (s1value < 1500 or s5value < 1500) and prev_intersection == 0: 
+        intersection = 1 
+        prev_intersection = 1
+    
+    return intersection == 1
+        
+def reset_intersetion():
+    print('reset')
+    global prev_intersection, intersection
+    prev_intersection = 0
+    intersection = 0
+    #read_sensors()
+    #if s1value > 1500 : 
+    #    prev_intersection = 0
+    #    intersection = 0
+    #if s5value > 1500 : 
+    #    prev_intersection = 0
+    #    intersection = 0
 #                                                                    PATHS
 
 pathEN = bfs(graph, 'E', 'N') #first path| it is fixed
@@ -247,48 +274,60 @@ def navigate_path(path):
         relative_direction = get_relative_direction(direction)
         
         print(f"Move {relative_direction} to {next_position}")
-
+        
         if relative_direction == 'north':
             print('going straight')
+            reset_intersetion()
+            read_sensors()
             while not detect_intersection():
                 follow_line()
-                utime.sleep(0.1)  # Short delay to prevent tight looping
+                #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
+                #utime.sleep(0.1)  # Short delay to prevent tight looping
             current_position = next_position
             path_index += 1
-            utime.sleep(1)  # Pause briefly at each intersection
+            utime.sleep(0.5)  # Pause briefly at each intersection
 
         elif relative_direction == 'west':
             leftturn()
             print('turning left')
             update_orientation('left')
+            reset_intersetion()
+            read_sensors()
             while not detect_intersection():
                 follow_line()
-                utime.sleep(0.1)  # Short delay to prevent tight looping
+                #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
+                #utime.sleep(0.1)  # Short delay to prevent tight looping
             current_position = next_position
             path_index += 1
-            utime.sleep(1)  # Pause briefly at each intersection
+            utime.sleep(0.5)  # Pause briefly at each intersection
 
         elif relative_direction == 'east':
             rightturn()
             print('turning right')
             update_orientation('right')
+            reset_intersetion()
+            read_sensors()
             while not detect_intersection():
                 follow_line()
-                utime.sleep(0.1)  # Short delay to prevent tight looping
+                #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
+                #utime.sleep(0.1)  # Short delay to prevent tight looping
             current_position = next_position
             path_index += 1
-            utime.sleep(1)  # Pause briefly at each intersection
+            utime.sleep(0.5)  # Pause briefly at each intersection
 
         elif relative_direction == 'south':
             turnaround()
             print('turning around')
             update_orientation('turnaround')
+            reset_intersetion()
+            read_sensors()
             while not detect_intersection():
                 follow_line()
-                utime.sleep(0.1)  # Short delay to prevent tight looping
+                #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
+                #utime.sleep(0.1)  # Short delay to prevent tight looping
             current_position = next_position
             path_index += 1
-            utime.sleep(1)  # Pause briefly at each intersection
+            utime.sleep(0.5)  # Pause briefly at each intersection
 
 #                                                               motor controller
 frequency = 15000
@@ -348,7 +387,7 @@ prev_left_encoder_state = 0
 prev_right_encoder_state = 0
 #                                                                    ms variable for the motors
 
-ms = 900
+ms = 700
 
 def update_odometry():
     global x, y, theta, prev_left_encoder_count, prev_right_encoder_count, left_encoder_count, right_encoder_count, prev_left_encoder_state, prev_right_encoder_state, delta_right, delta_left, Rturn
@@ -428,9 +467,10 @@ def update_odometry():
 
 def follow_line():
     global current_state, counter, COUNTER_MAX
+    read_sensors()
 
     if current_state == 'forward': #state in which there is FOLLOW THE LINE
-        print("forward")
+        #print("forward")
         forward() #robot moves forward
 
         # Call the update_odometry function to update the current position and orientation
@@ -444,7 +484,7 @@ def follow_line():
             counter = 0
            
     if current_state == 'turn_right':
-        print("turn_right")
+        #print("turn_right")
         turnright() #robot turns right
         current_state = 'forward'
         # Call the update_odometry function to update the current position and orientation
@@ -455,7 +495,7 @@ def follow_line():
             #current_state = 'forward'
     
     if current_state == 'turn_left':
-        print("turn_left")
+        #print("turn_left")
         turnleft()
         current_state = 'forward'
         # Call the update_odometry function to update the current position and orientation
@@ -511,7 +551,7 @@ def leftturn():
     pin2_motor1.value(0)
     pin1_motor2.value(1)
     pin2_motor2.value(0)
-    utime.sleep(1) # adjust this value to make the robot turn the right
+    utime.sleep(2) # adjust this value to make the robot turn the right
     # Code for turning left
 
 def rightturn():
@@ -521,17 +561,17 @@ def rightturn():
     pin2_motor1.value(0)
     pin1_motor2.value(0)
     pin2_motor2.value(0)
-    utime.sleep(1)
+    utime.sleep(2)
     # Code for turning right
 
-def turnaround():
+def turnaround(): 
     enable_motor1.duty(ms)
     enable_motor2.duty(ms)
     pin1_motor1.value(1)
     pin2_motor1.value(0)
     pin1_motor2.value(0)
     pin2_motor2.value(1)
-    utime.sleep(1)
+    utime.sleep(2)
     # Code for turning aroumd
 
 
@@ -554,11 +594,11 @@ def turnaround():
 #   ^ part for connecting to the laptop
 
 while True:
-    s1value = sensor1.read()
-    s2value = sensor2.read()
-    s3value = sensor3.read()
-    s4value = sensor4.read()
-    s5value = sensor5.read()
+    #s1value = sensor1.read()
+    #s2value = sensor2.read()
+    #s3value = sensor3.read()
+    #s4value = sensor4.read()
+    #s5value = sensor5.read()
     #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
     
     path = bfs(graph, 'E', 'M')

@@ -8,16 +8,24 @@ import machine #|^
 import socket   #communication w the laptop
 import network  #|^
 #from collections import deque #mapping (try import *)
-import utime # |^
+#import utime # |^
 
 #                                                              network connection
 
 #establish a Wi-Fi connection using the network
-wlan = network.WLAN(network.STA_IF)
-wlan.active(True)
-wlan.connect('House of Mici', '76542527')
+#wlan = network.WLAN(network.STA_IF)
+#wlan.active(True)
+#wlan.connect('House of Mici', '76542527')
 
+#                                                                    magnet
 
+mag = machine.Pin(4, machine.Pin.OUT)
+
+def electromagnet_on():
+    mag.on()  # Turn on the electromagnet
+
+def electromagnet_off():
+    mag.off()  # Turn off the electromagnet
 #                                                                  line sensor 
 
 sensor1 = ADC(Pin(32))  # Valid ADC1 pin
@@ -45,6 +53,7 @@ CSOUT = Pin(27, Pin.IN)
 redFrequency = 0
 greenFrequency = 0
 blueFrequency = 0
+
 
 # Stores the red. green and blue colors
 redColor = 0
@@ -124,10 +133,6 @@ graph = {
 }
 
 #                                                              BFS for pathfinding
-#start = 'E'
-#start = graph['E']
-#goal = graph['M']
-#this function finds the path
 
 def bfs(graph, start, goal):
     queue = [(start, [start])]
@@ -147,11 +152,86 @@ def bfs(graph, start, goal):
             queue.append((neighbor, path + [neighbor]))
     return None
 
+#                                                      reading the values for the line sensor
+def read_sensors():
+    global s1value, s2value, s3value, s4value, s5value
+    s1value = sensor1.read()
+    s2value = sensor2.read()
+    s3value = sensor3.read()
+    s4value = sensor4.read()
+    s5value = sensor5.read()
 #                                                             intersection detection
+
+intersection = 0
+prev_intersection = 0
+
 def detect_intersection():
-    if s1value < 3500 or s5value < 3500:
-        return True
+    global intersection, prev_intersection
+    read_sensors()
+    if (s1value < 1500 or s1value < 1500 and s2value < 1500)  and prev_intersection == 0: 
+        intersection = 1 
+        prev_intersection = 1
     
+    elif (s5value < 1500 or s5value < 1500 and s4value < 1500) and prev_intersection == 0:
+        intersection = 1
+        prev_intersection = 1
+    
+    elif s1value < 1500 and s5value < 1500 and prev_intersection == 0:
+        intersection = 1
+        prev_intersection = 1
+
+    return intersection == 1
+        
+def reset_intersetion():
+    print('reset')
+    global prev_intersection, intersection
+    prev_intersection = 0
+    intersection = 0
+    #read_sensors()
+    #if s1value > 1500 : 
+    #    prev_intersection = 0
+    #    intersection = 0
+    #if s5value > 1500 : 
+    #    prev_intersection = 0
+    #    intersection = 0
+#                                                                    PATHS
+
+pathEN = bfs(graph, 'E', 'N') #first path| it is fixed
+
+pathNA = bfs(graph, 'N', 'A')
+pathNB = bfs(graph, 'N', 'B')
+pathNC = bfs(graph, 'N', 'C')
+pathND = bfs(graph, 'N', 'D') # options of paths depending on the color of the first box
+
+pathAM = bfs(graph, 'A', 'M')
+pathBM = bfs(graph, 'B', 'M')
+pathCM = bfs(graph, 'C', 'M')
+pathDM = bfs(graph, 'D', 'M')# options of paths for goiong to the second box
+
+pathMA = bfs(graph, 'M', 'A')
+pathMB = bfs(graph, 'M', 'B')
+pathMC = bfs(graph, 'M', 'C')
+pathMD = bfs(graph, 'M', 'D') # options of paths depending on the color of the second box
+
+pathAL = bfs(graph, 'A', 'L')
+pathBL = bfs(graph, 'B', 'L')
+pathCL = bfs(graph, 'C', 'L')
+pathDL = bfs(graph, 'D', 'L')# options of paths for goiong to the third box
+
+pathLA = bfs(graph, 'L', 'A')
+pathLB = bfs(graph, 'L', 'B')
+pathLC = bfs(graph, 'L', 'C')
+pathLD = bfs(graph, 'L', 'D') # options of paths depending on the color of the third box
+
+pathAK = bfs(graph, 'A', 'K')
+pathBK = bfs(graph, 'B', 'K')
+pathCK = bfs(graph, 'C', 'K')
+pathDK = bfs(graph, 'D', 'K')# options of paths for goiong to the fourth box
+
+pathKA = bfs(graph, 'K', 'A')
+pathKB = bfs(graph, 'K', 'B')
+pathKC = bfs(graph, 'K', 'C')
+pathKD = bfs(graph, 'K', 'D') # options of paths depending on the color of the fourth box
 
 #                                                               Navigate the path
 # Possible orientations
@@ -187,32 +267,60 @@ def get_relative_direction(direction):
 def navigate_path(path):
     global current_orientation
     current_position = path[0]
-    for next_position in path[1:]:
+    path_index = 1  # Start from the second element
+    
+    while path_index < len(path):
+        next_position = path[path_index]
         direction = graph[current_position][next_position]
         relative_direction = get_relative_direction(direction)
         
         print(f"Move {relative_direction} to {next_position}")
         
         if relative_direction == 'north':
-            follow_line()
+            print('going straight')
+            reset_intersetion()
+            while not detect_intersection():
+                follow_line()
+                #utime.sleep(0.1)  # Short delay to prevent tight looping
+            current_position = next_position
+            path_index += 1
+            utime.sleep(0.5)  # Pause briefly at each intersection
+
         elif relative_direction == 'west':
             leftturn()
+            print('turning left')
             update_orientation('left')
-            follow_line()
+            reset_intersetion()
+            while not detect_intersection():
+                follow_line()
+                #utime.sleep(0.1)  # Short delay to prevent tight looping
+            current_position = next_position
+            path_index += 1
+            utime.sleep(0.5)  # Pause briefly at each intersection
+
         elif relative_direction == 'east':
             rightturn()
+            print('turning right')
             update_orientation('right')
-            follow_line()
+            reset_intersetion()
+            while not detect_intersection():
+                follow_line()
+                #utime.sleep(0.1)  # Short delay to prevent tight looping
+            current_position = next_position
+            path_index += 1
+            utime.sleep(0.5)  # Pause briefly at each intersection
+
         elif relative_direction == 'south':
             turnaround()
+            print('turning around')
             update_orientation('turnaround')
-            follow_line()
-        
-        while not detect_intersection():
-            follow_line()
-
-        current_position = next_position
-        utime.sleep(1)  # Pause briefly at each intersection
+            reset_intersetion()
+            while not detect_intersection():
+                follow_line()
+                #utime.sleep(0.1)  # Short delay to prevent tight looping
+            current_position = next_position
+            path_index += 1
+            utime.sleep(0.5)  # Pause briefly at each intersection
 
 #                                                               motor controller
 frequency = 15000
@@ -236,7 +344,7 @@ counter = 0
 COUNTER_MAX = 5
 
 #define the variable for                                         current state
-#current_state = 'forward'
+current_state = 'forward'
 
 #                                                                  encoders
 # Define GPIO pins for wheel encoders
@@ -270,7 +378,9 @@ prev_right_encoder_count = 0
 #Variables to store previous encoder states
 prev_left_encoder_state = 0
 prev_right_encoder_state = 0
+#                                                                    ms variable for the motors
 
+ms = 700
 
 def update_odometry():
     global x, y, theta, prev_left_encoder_count, prev_right_encoder_count, left_encoder_count, right_encoder_count, prev_left_encoder_state, prev_right_encoder_state, delta_right, delta_left, Rturn
@@ -349,53 +459,47 @@ def update_odometry():
     theta = theta % (2 * math.pi)
 
 def follow_line():
-    if s3value < 3500:
-        current_state = 'forward'
-        counter = 0
-    elif s2value < 1600:
-        current_state = 'turn_left'
-        counter = 0
-    elif s4value < 1600:
-        current_state = 'turn_right'
-        counter = 0
-    elif distance > 5.0:
-        current_state = "stop"
-        counter = 0
+    global current_state, counter, COUNTER_MAX
 
     if current_state == 'forward': #state in which there is FOLLOW THE LINE
-        print("forward")
+        #print("forward")
         forward() #robot moves forward
+
         # Call the update_odometry function to update the current position and orientation
-        update_odometry()
+        #update_odometry()
 
-        # return to going forward
-        if counter == COUNTER_MAX:
-            current_state = 'forward'
-
+        if  s2value < 1600:
+            current_state = 'turn_left'
+            counter = 0
+        elif s4value < 1600:
+            current_state = 'turn_right'
+            counter = 0
+           
     if current_state == 'turn_right':
-        print("turn_right")
-        turnright()
+        #print("turn_right")
+        turnright() #robot turns right
+        current_state = 'forward'
         # Call the update_odometry function to update the current position and orientation
-        update_odometry()
+        #update_odometry()
 
         # return to going forward
-        if counter == COUNTER_MAX:
-            current_state = 'forward'
+        #if counter == COUNTER_MAX:
+            #current_state = 'forward'
     
     if current_state == 'turn_left':
-        print("turn_left")
+        #print("turn_left")
         turnleft()
-
+        current_state = 'forward'
         # Call the update_odometry function to update the current position and orientation
-        update_odometry()
+        #update_odometry()
 
         # return to going forward
-        if counter == COUNTER_MAX:
-            current_state = 'forward'
+        #if counter == COUNTER_MAX:
+            #current_state = 'forward'
     
 def forward():
-    enable_motor1.duty(1023)
-    enable_motor2.duty(1023)
+    enable_motor1.duty(ms)
+    enable_motor2.duty(ms)
     pin1_motor1.value(1)
     pin2_motor1.value(0)
     pin1_motor2.value(1)
@@ -403,26 +507,28 @@ def forward():
     # Code for moving forward
 
 def turnleft():
-    enable_motor1.duty(1023)
-    enable_motor2.duty(1023)
+    enable_motor1.duty(ms)
+    enable_motor2.duty(ms)
     pin1_motor1.value(0)
     pin2_motor1.value(0)
     pin1_motor2.value(1)
     pin2_motor2.value(0)
+    utime.sleep(0.1)
     # Code for turning left
 
 def turnright():
-    enable_motor1.duty(1023)
-    enable_motor2.duty(1023)
+    enable_motor1.duty(ms)
+    enable_motor2.duty(ms)
     pin1_motor1.value(1)
     pin2_motor1.value(0)
     pin1_motor2.value(0)
     pin2_motor2.value(0)
+    utime.sleep(0.1)
     # Code for turning right
 
 def stop(): # make the robot stop
-    enable_motor1.duty(1023)
-    enable_motor2.duty(1023)
+    enable_motor1.duty(ms)
+    enable_motor2.duty(ms)
     pin1_motor1.value(0)
     pin2_motor1.value(0)
     pin1_motor2.value(0)
@@ -431,73 +537,75 @@ def stop(): # make the robot stop
 
 # tunrs for navigation need to be tested in action and calibrated so that the robot lands in the middle of the line in the direction it turned
 def leftturn():
-    enable_motor1.duty(1023)
-    enable_motor2.duty(1023)
+    enable_motor1.duty(ms)
+    enable_motor2.duty(ms)
     pin1_motor1.value(0)
     pin2_motor1.value(0)
     pin1_motor2.value(1)
     pin2_motor2.value(0)
+    utime.sleep(1) # adjust this value to make the robot turn the right
     # Code for turning left
 
 def rightturn():
-    enable_motor1.duty(1023)
-    enable_motor2.duty(1023)
+    enable_motor1.duty(ms)
+    enable_motor2.duty(ms)
     pin1_motor1.value(1)
     pin2_motor1.value(0)
     pin1_motor2.value(0)
     pin2_motor2.value(0)
+    utime.sleep(1)
     # Code for turning right
 
 def turnaround():
-    enable_motor1.duty(1023)
-    enable_motor2.duty(1023)
+    enable_motor1.duty(ms)
+    enable_motor2.duty(ms)
     pin1_motor1.value(1)
     pin2_motor1.value(0)
     pin1_motor2.value(0)
     pin2_motor2.value(1)
+    utime.sleep(1)
     # Code for turning aroumd
 
 
 
 
 #                                                                  MAIN LOOP
-while not wlan.isconnected():
-    pass
-print('Connected to Wi-Fi')
+#while not wlan.isconnected():
+    #pass
+#print('Connected to Wi-Fi')
 
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 #connect to the laptop using the socket object
-s.connect(('192.168.0.101', 12345)) #replace the values
+#s.connect(('192.168.0.101', 12345)) #replace the values
 
 #you can send data to the laptop using the send() method
 #s.send('Hello, laptop!')
 
 #   ^ part for connecting to the laptop
 
-
-while wlan.isconnected():
-
+while True:
     s1value = sensor1.read()
     s2value = sensor2.read()
     s3value = sensor3.read()
     s4value = sensor4.read()
     s5value = sensor5.read()
     #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
-    distance = sensor.distance_cm()
-    #print(distance) #for the distance sensor
-
+    
     path = bfs(graph, 'E', 'M')
 
     if path:
         print("Path found:", path)
     else:
         print("No path found")
-    
+        
     navigate_path(path)    
 
-    # increment counter
-    counter += 1
+    
 
     
+
+    # increment counter
+    #counter += 1
+    #utime.sleep(0.1)
