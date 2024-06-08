@@ -181,7 +181,7 @@ def detect_intersection():
     
     return intersection == 1
         
-def reset_intersetion():
+def reset_intersection():
     print('reset')
     global prev_intersection, intersection
     prev_intersection = 0
@@ -264,7 +264,7 @@ def get_relative_direction(direction):
 
 # Navigate the path with dynamic orientation
 def navigate_path(path):
-    global current_orientation
+    global current_orientation, current_state
     current_position = path[0]
     path_index = 1  # Start from the second element
     
@@ -277,9 +277,10 @@ def navigate_path(path):
         
         if relative_direction == 'north':
             print('going straight')
-            reset_intersetion()
-            read_sensors()
-            while not detect_intersection():
+            reset_intersection()
+            #read_sensors()
+            current_state = 'forward'
+            while not current_state == 'intersection': #detect_intersection():
                 follow_line()
                 #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
                 #utime.sleep(0.1)  # Short delay to prevent tight looping
@@ -291,9 +292,10 @@ def navigate_path(path):
             leftturn()
             print('turning left')
             update_orientation('left')
-            reset_intersetion()
-            read_sensors()
-            while not detect_intersection():
+            reset_intersection()
+            #read_sensors()
+            current_state = 'forward'
+            while not current_state == 'intersection': #detect_intersection():
                 follow_line()
                 #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
                 #utime.sleep(0.1)  # Short delay to prevent tight looping
@@ -305,9 +307,10 @@ def navigate_path(path):
             rightturn()
             print('turning right')
             update_orientation('right')
-            reset_intersetion()
-            read_sensors()
-            while not detect_intersection():
+            reset_intersection()
+            #read_sensors()
+            current_state = 'forward'
+            while not current_state == 'intersection': #detect_intersection():
                 follow_line()
                 #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
                 #utime.sleep(0.1)  # Short delay to prevent tight looping
@@ -319,9 +322,10 @@ def navigate_path(path):
             turnaround()
             print('turning around')
             update_orientation('turnaround')
-            reset_intersetion()
-            read_sensors()
-            while not detect_intersection():
+            reset_intersection()
+            #read_sensors()
+            current_state = 'forward'
+            while current_state == 'intersection': #detect_intersection():
                 follow_line()
                 #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
                 #utime.sleep(0.1)  # Short delay to prevent tight looping
@@ -387,7 +391,7 @@ prev_left_encoder_state = 0
 prev_right_encoder_state = 0
 #                                                                    ms variable for the motors
 
-ms = 700
+ms = 620
 
 def update_odometry():
     global x, y, theta, prev_left_encoder_count, prev_right_encoder_count, left_encoder_count, right_encoder_count, prev_left_encoder_state, prev_right_encoder_state, delta_right, delta_left, Rturn
@@ -466,7 +470,7 @@ def update_odometry():
     theta = theta % (2 * math.pi)
 
 def follow_line():
-    global current_state, counter, COUNTER_MAX
+    global intersection, prev_intersection, current_state 
     read_sensors()
 
     if current_state == 'forward': #state in which there is FOLLOW THE LINE
@@ -476,12 +480,18 @@ def follow_line():
         # Call the update_odometry function to update the current position and orientation
         #update_odometry()
 
-        if  s2value < 1600:
+        if s1value < 2600 and prev_intersection == 0:
+            current_state = 'intersection'
+
+        elif s5value < 2600 and prev_intersection == 0:
+            current_state = 'intersection'
+        
+        elif  s2value < 2600:
             current_state = 'turn_left'
-            counter = 0
-        elif s4value < 1600:
+            
+        elif s4value < 2600:
             current_state = 'turn_right'
-            counter = 0
+            
            
     if current_state == 'turn_right':
         #print("turn_right")
@@ -489,10 +499,6 @@ def follow_line():
         current_state = 'forward'
         # Call the update_odometry function to update the current position and orientation
         #update_odometry()
-
-        # return to going forward
-        #if counter == COUNTER_MAX:
-            #current_state = 'forward'
     
     if current_state == 'turn_left':
         #print("turn_left")
@@ -500,10 +506,12 @@ def follow_line():
         current_state = 'forward'
         # Call the update_odometry function to update the current position and orientation
         #update_odometry()
+    
+    if current_orientation == 'intersection':
 
-        # return to going forward
-        #if counter == COUNTER_MAX:
-            #current_state = 'forward'
+        intersection = 1 
+        prev_intersection = 1
+
     
 def forward():
     enable_motor1.duty(ms)
