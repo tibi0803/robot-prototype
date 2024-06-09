@@ -391,7 +391,7 @@ prev_left_encoder_state = 0
 prev_right_encoder_state = 0
 #                                                                    ms variable for the motors
 
-ms = 620
+ms = 640
 
 def update_odometry():
     global x, y, theta, prev_left_encoder_count, prev_right_encoder_count, left_encoder_count, right_encoder_count, prev_left_encoder_state, prev_right_encoder_state, delta_right, delta_left, Rturn
@@ -555,21 +555,21 @@ def stop(): # make the robot stop
 def leftturn():
     enable_motor1.duty(ms)
     enable_motor2.duty(ms)
-    pin1_motor1.value(0)
-    pin2_motor1.value(0)
-    pin1_motor2.value(1)
-    pin2_motor2.value(0)
-    utime.sleep(2) # adjust this value to make the robot turn the right
+    pin1_motor1.value(1)
+    pin2_motor1.value(0)    
+    pin1_motor2.value(0)
+    pin2_motor2.value(1)
+    utime.sleep(1.5) # adjust this value to make the robot turn the right
     # Code for turning left
 
 def rightturn():
     enable_motor1.duty(ms)
     enable_motor2.duty(ms)
-    pin1_motor1.value(1)
-    pin2_motor1.value(0)
-    pin1_motor2.value(0)
+    pin1_motor1.value(0)
+    pin2_motor1.value(1)
+    pin1_motor2.value(1)
     pin2_motor2.value(0)
-    utime.sleep(2)
+    utime.sleep(1.4)
     # Code for turning right
 
 def turnaround(): 
@@ -616,11 +616,3 @@ while True:
         print("No path found")
         
     navigate_path(path)    
-
-    
-
-    
-
-    # increment counter
-    #counter += 1
-    #utime.sleep(0.1)
