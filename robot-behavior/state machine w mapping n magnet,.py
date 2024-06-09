@@ -182,7 +182,7 @@ def detect_intersection():
     return intersection == 1
         
 def reset_intersection():
-    print('reset')
+    #print('reset')
     global prev_intersection, intersection
     prev_intersection = 0
     intersection = 0
@@ -262,6 +262,8 @@ def get_relative_direction(direction):
     elif direction == 'left':
         return orientations[(idx + 3) % 4]
 
+#current_position = graph['E'] #variable for my states for multiple paths
+
 # Navigate the path with dynamic orientation
 def navigate_path(path):
     global current_orientation, current_state
@@ -285,6 +287,7 @@ def navigate_path(path):
                 #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
                 #utime.sleep(0.1)  # Short delay to prevent tight looping
             current_position = next_position
+            print(current_position)
             path_index += 1
             utime.sleep(0.5)  # Pause briefly at each intersection
 
@@ -300,6 +303,7 @@ def navigate_path(path):
                 #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
                 #utime.sleep(0.1)  # Short delay to prevent tight looping
             current_position = next_position
+            print(current_position)
             path_index += 1
             utime.sleep(0.5)  # Pause briefly at each intersection
 
@@ -315,6 +319,7 @@ def navigate_path(path):
                 #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
                 #utime.sleep(0.1)  # Short delay to prevent tight looping
             current_position = next_position
+            print(current_position)
             path_index += 1
             utime.sleep(0.5)  # Pause briefly at each intersection
 
@@ -330,6 +335,7 @@ def navigate_path(path):
                 #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
                 #utime.sleep(0.1)  # Short delay to prevent tight looping
             current_position = next_position
+            print(current_position)
             path_index += 1
             utime.sleep(0.5)  # Pause briefly at each intersection
 
@@ -600,13 +606,16 @@ def turnaround():
 
 #   ^ part for connecting to the laptop
 
+#path = pathEN
+journey = 'j1'
+dest1 = 'N'
 while True:
-       
-    path = bfs(graph, 'E', 'M')
 
-    if path:
-        print("Path found:", path)
-    else:
-        print("No path found")
+    if journey == 'j1':  
+        #path = pathEN
+        navigate_path(pathEN)
+        if dest1 == pathEN[-1]:
+            journey = 'j2'
+            print('next journey')
         
-    navigate_path(path)    
+
