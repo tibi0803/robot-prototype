@@ -601,13 +601,7 @@ def turnaround():
 #   ^ part for connecting to the laptop
 
 while True:
-    #s1value = sensor1.read()
-    #s2value = sensor2.read()
-    #s3value = sensor3.read()
-    #s4value = sensor4.read()
-    #s5value = sensor5.read()
-    #print(s1value,s2value,s3value,s4value,s5value) #for the line sensor
-    
+       
     path = bfs(graph, 'E', 'M')
 
     if path:
