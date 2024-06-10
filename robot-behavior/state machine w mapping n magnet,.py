@@ -70,11 +70,15 @@ blueColor = 0
 CS0.value(1)
 CS1.value(0)
 
+#i just want this variable outside the function too
+#currentColor = 'color'
+
 # scale values
 def scale_value(unscaled, from_min, from_max, to_min, to_max):
     return (to_max-to_min)*(unscaled-from_min)/(from_max-from_min)+to_min
 
 def getcolor():
+    global currentColor
     #Setting RED (R) filtered photodiodes to be read
     CS2.value(0)
     CS3.value(0)
@@ -111,7 +115,7 @@ def getcolor():
     if blueColor > redColor and blueColor > greenColor:
         currentColor = "blue"
     
-    print(redColor, greenColor, blueColor, currentColor)
+    #print(redColor, greenColor, blueColor, currentColor)
     sleep(0.5)
 
 #                                                        graph that represents the map
@@ -558,6 +562,15 @@ def stop(): # make the robot stop
     # Code for stopping
 
 # tunrs for navigation need to be tested in action and calibrated so that the robot lands in the middle of the line in the direction it turned
+def bitforward():
+    enable_motor1.duty(ms)
+    enable_motor2.duty(ms)
+    pin1_motor1.value(1)
+    pin2_motor1.value(0)
+    pin1_motor2.value(1)
+    pin2_motor2.value(0)
+    utime.sleep(0.6)
+    # Code for moving forward
 def leftturn():
     enable_motor1.duty(ms)
     enable_motor2.duty(ms)
@@ -575,7 +588,7 @@ def rightturn():
     pin2_motor1.value(1)
     pin1_motor2.value(1)
     pin2_motor2.value(0)
-    utime.sleep(1.4)
+    utime.sleep(1.6)
     # Code for turning right
 
 def turnaround(): 
@@ -585,7 +598,7 @@ def turnaround():
     pin2_motor1.value(0)
     pin1_motor2.value(0)
     pin2_motor2.value(1)
-    utime.sleep(2)
+    utime.sleep(4)
     # Code for turning aroumd
 
 
@@ -606,16 +619,174 @@ def turnaround():
 
 #   ^ part for connecting to the laptop
 
-#path = pathEN
+#path = pathEN  
 journey = 'j1'
-dest1 = 'N'
+dest = 'N'
+
 while True:
 
     if journey == 'j1':  
-        #path = pathEN
-        navigate_path(pathEN)
-        if dest1 == pathEN[-1]:
-            journey = 'j2'
+        path = pathEN
+        navigate_path(path)
+        if dest == pathEN[-1]:
+            journey = 'pick box1'
             print('next journey')
-        
 
+    if journey == 'pick box1':
+        rightturn()
+        update_orientation('right')
+        bitforward()
+        stop()
+        electromagnet_on()
+        getcolor()
+        if currentColor == "red":
+            path = pathNC
+            dest = 'C'
+        elif currentColor == "green":
+            path = pathNB
+            dest = 'B'
+        elif currentColor == "blue":
+            path = pathNA
+            dest = 'A'
+        print(currentColor)
+        turnaround()
+        update_orientation('turnaround')
+        bitforward()
+        stop()        
+        print('j1 back')
+        print(path)        
+        journey = 'j1 back'
+    
+    if journey == 'j1 back':        
+        navigate_path(path)
+        if dest == pathEN[-1]:
+            journey = 'leave box1'
+    
+    if journey == 'leave box1':    
+        rightturn()
+        update_orientation('right')
+        bitforward()
+        stop()
+        electromagnet_off()
+        turnaround()
+        update_orientation('turnaround')
+        bitforward()
+        stop()
+        if dest == 'A':
+            path = pathAM            
+            journey = 'j2'
+        elif dest == 'B':
+            path = pathBM
+            journey = 'j2'
+        elif dest == 'C':
+            path = pathCM
+            journey = 'j2'
+        elif dest == 'D':
+            path = pathDM
+            journey = 'j2'
+    
+    if journey == 'j2':
+        dest = 'M'
+        navigate_path(path)
+        if dest == pathEN[-1]:
+            journey = 'pick box2'
+    
+    if journey == 'pick box2':
+        rightturn()
+        update_orientation('right')
+        bitforward()
+        stop()
+        electromagnet_on()
+        getcolor()
+        if currentColor == "red":
+            path = pathMC
+            dest = 'C'
+        elif currentColor == "green":
+            path = pathMB
+            dest = 'B'
+        elif currentColor == "blue":
+            path = pathMA
+            dest = 'A'
+        print(currentColor)
+        turnaround()
+        update_orientation('turnaround')
+        bitforward()
+        stop()        
+        print('j2 back')
+        print(path)        
+        journey = 'j2 back'
+    
+    if journey == 'j2 back':        
+        navigate_path(path)
+        if dest == pathEN[-1]:
+            journey = 'leave box2'
+    
+    if journey == 'leave box2':    
+        rightturn()
+        update_orientation('right')
+        bitforward()
+        stop()
+        electromagnet_off()
+        turnaround()
+        update_orientation('turnaround')
+        bitforward()
+        stop()
+        if dest == 'A':
+            path = pathAL            
+            journey = 'j3'
+        elif dest == 'B':
+            path = pathBL
+            journey = 'j3'
+        elif dest == 'C':
+            path = pathCL
+            journey = 'j3'
+        elif dest == 'D':
+            path = pathDL
+            journey = 'j3'
+
+    if journey == 'j3':
+        dest = 'L'
+        navigate_path(path)
+        if dest == pathEN[-1]:
+            journey = 'pick box3'
+
+    if journey == 'pick box3':
+        rightturn()
+        update_orientation('right')
+        bitforward()
+        stop()
+        electromagnet_on()
+        getcolor()
+        if currentColor == "red":
+            path = pathLC
+            dest = 'C'
+        elif currentColor == "green":
+            path = pathLB
+            dest = 'B'
+        elif currentColor == "blue":
+            path = pathLA
+            dest = 'A'
+        print(currentColor)
+        turnaround()
+        update_orientation('turnaround')
+        bitforward()
+        stop()        
+        print('j3 back')
+        print(path)        
+        journey = 'j3 back'
+
+    if journey == 'j3 back':        
+        navigate_path(path)
+        if dest == pathEN[-1]:
+            journey = 'leave box3'
+    
+    if journey == 'leave box3':    
+        rightturn()
+        update_orientation('right')
+        bitforward()
+        stop()
+        electromagnet_off()
+        turnaround()
+        update_orientation('turnaround')
+        bitforward()
+        stop()
