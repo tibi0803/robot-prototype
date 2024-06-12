@@ -559,6 +559,7 @@ def stop(): # make the robot stop
     pin2_motor1.value(0)
     pin1_motor2.value(0)
     pin2_motor2.value(0)
+    utime.sleep(6)
     # Code for stopping
 
 # tunrs for navigation need to be tested in action and calibrated so that the robot lands in the middle of the line in the direction it turned
@@ -569,7 +570,7 @@ def bitforward():
     pin2_motor1.value(0)
     pin1_motor2.value(1)
     pin2_motor2.value(0)
-    utime.sleep(0.6)
+    utime.sleep(0.5)
     # Code for moving forward
 def leftturn():
     enable_motor1.duty(ms)
@@ -578,7 +579,7 @@ def leftturn():
     pin2_motor1.value(0)    
     pin1_motor2.value(0)
     pin2_motor2.value(1)
-    utime.sleep(1.5) # adjust this value to make the robot turn the right
+    utime.sleep(1.4) # adjust this value to make the robot turn the right
     # Code for turning left
 
 def rightturn():
@@ -588,7 +589,7 @@ def rightturn():
     pin2_motor1.value(1)
     pin1_motor2.value(1)
     pin2_motor2.value(0)
-    utime.sleep(1.6)
+    utime.sleep(1.4)
     # Code for turning right
 
 def turnaround(): 
@@ -598,7 +599,7 @@ def turnaround():
     pin2_motor1.value(0)
     pin1_motor2.value(0)
     pin2_motor2.value(1)
-    utime.sleep(4)
+    utime.sleep(2.5)
     # Code for turning aroumd
 
 
@@ -627,6 +628,7 @@ while True:
 
     if journey == 'j1':  
         path = pathEN
+        print(path)
         navigate_path(path)
         if dest == pathEN[-1]:
             journey = 'pick box1'
@@ -652,13 +654,13 @@ while True:
         turnaround()
         update_orientation('turnaround')
         bitforward()
-        stop()        
-        print('j1 back')
-        print(path)        
+        stop()                
+        print('j1 back')        
         journey = 'j1 back'
     
     if journey == 'j1 back':        
         navigate_path(path)
+        print(path)
         if dest == pathEN[-1]:
             journey = 'leave box1'
     
@@ -683,10 +685,11 @@ while True:
             journey = 'j2'
         elif dest == 'D':
             path = pathDM
-            journey = 'j2'
+            journey = 'j2'        
     
     if journey == 'j2':
         dest = 'M'
+        print(path)
         navigate_path(path)
         if dest == pathEN[-1]:
             journey = 'pick box2'
@@ -713,10 +716,11 @@ while True:
         bitforward()
         stop()        
         print('j2 back')
-        print(path)        
+        #print(path)        
         journey = 'j2 back'
     
-    if journey == 'j2 back':        
+    if journey == 'j2 back': 
+        print(path)       
         navigate_path(path)
         if dest == pathEN[-1]:
             journey = 'leave box2'
@@ -746,6 +750,7 @@ while True:
 
     if journey == 'j3':
         dest = 'L'
+        print(path)
         navigate_path(path)
         if dest == pathEN[-1]:
             journey = 'pick box3'
